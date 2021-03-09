@@ -1,0 +1,191 @@
+fragment Category on Category {
+  __typename
+  id
+  denomination
+}
+
+fragment Model on Model {
+  __typename
+  id
+  denomination
+  category {
+    ...Category
+  }
+}
+
+fragment Asset on Asset {
+  __typename
+  id
+  denomination
+  model {
+    __typename
+    id
+    denomination
+  }
+}
+
+fragment TimeSlot on TimeSlot {
+  __typename
+  startTime
+  endTime
+  available
+}
+
+fragment Reservation on Reservation {
+  __typename
+  id
+  startTime
+  endTime
+  model {
+    __typename
+    id
+    denomination
+  }
+  completedAt
+}
+
+fragment PageInfoFields on PageInfo {
+  hasNextPage
+  endCursor
+}
+
+query AllCategories($first: Int, $after: String) {
+  organisation {
+    categories(first: $first, after: $after) {
+      pageInfo {
+        ...PageInfoFields
+      }
+      edges {
+        node {
+          ...Category
+        }
+      }
+    }
+  }
+}
+
+query SingleCategory($id: ID!) {
+  category(id: $id) {
+    ...Category
+  }
+}
+
+query AllModels($first: Int, $after: String) {
+  organisation {
+    models(first: $first, after: $after) {
+      pageInfo {
+        ...PageInfoFields
+      }
+      edges {
+        node {
+          ...Model
+        }
+      }
+    }
+  }
+}
+
+query ModelsByCategory($categoryId: ID!, $first: Int, $after: String) {
+  category(id: $categoryId) {
+    models(first: $first, after: $after) {
+      pageInfo {
+        ...PageInfoFields
+      }
+    }
+  }
+}
+
+query SingleModel($id: ID!) {
+  model(id: $id) {
+    ...Model
+  }
+}
+
+query AllAssets($first: Int, $after: String) {
+  organisation {
+    assets(first: $first, after: $after) {
+      pageInfo {
+        ...PageInfoFields
+      }
+      edges {
+        node {
+          ...Asset
+        }
+      }
+    }
+  }
+}
+
+query SingleAsset($id: ID!) {
+  asset(id: $id) {
+    ...Asset
+  }
+}
+
+query AssetsByModel($modelId: ID!, $first: Int, $after: String) {
+  model(id: $modelId) {
+    assets(first: $first, after: $after) {
+      pageInfo {
+        ...PageInfoFields
+      }
+      edges {
+        node {
+          ...Asset
+        }
+      }
+    }
+  }
+}
+
+query TimeSlotsByModel($modelId: ID!, $filter: TimeSlotFilter, $first: Int, $after: String) {
+  model(id: $modelId) {
+    slots(filter: $filter, first: $first, after: $after) {
+      pageInfo {
+        ...PageInfoFields
+      }
+      edges {
+        node {
+          ...TimeSlot
+        }
+      }
+    }
+  }
+}
+
+query SingleReservation($id: ID!) {
+  reservation(id: $id) {
+    ...Reservation
+  }
+}
+
+mutation CreateReservation($draft: ReservationDraft!) {
+  createReservation(draft: $draft) {
+    success
+    errors {
+      message
+      ... on ValidationError {
+        field
+        hint
+      }
+    }
+    reservation {
+      ...Reservation
+    }
+  }
+}
+
+mutation UpdateReservation($id: ID!, $actions: [ReservationAction!]!) {
+  updateReservation(id: $id, actions: $actions) {
+    success
+    errors {
+      message
+      ... on ValidationError {
+        field
+        hint
+      }
+    }
+    reservation {
+      ...Reservation
+    }
+  }
+}

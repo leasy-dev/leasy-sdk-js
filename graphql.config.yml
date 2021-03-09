@@ -1,0 +1,19 @@
+schema: 'http://localhost:8080/graphql?authorization=Nd_-dTK2RuCjFcXpGJJo5A.TUodh1kCXthY45H1qTLEw-7tXm1I-lFOExKn'
+documents: "./src/**/*.graphql"
+extensions:
+  codegen:
+    generates:
+      ./src/generated/graphql-operations.ts:
+        plugins:
+          - typescript
+          - typescript-operations
+          - typescript-graphql-request
+        config:
+          scalars:
+            DateTime: string
+            Date: string
+            LocalTime: string
+            EmptyPayload: '{}'
+          nonOptionalTypename: true
+          preResolveTypes: true
+          enumsAsTypes: true
