@@ -193,6 +193,8 @@ export type Organisation = {
   reservations: ReservationConnection;
   /** List of all API keys of this organisation. */
   apiKeys: ApiKeyConnection;
+  /** Load all customers in this organisation. */
+  customers: CustomerConnection;
 };
 
 
@@ -261,6 +263,18 @@ export type OrganisationReservationsArgs = {
  * can be a business, a company, an association or just a branch within such an entity.
  */
 export type OrganisationApiKeysArgs = {
+  after?: Maybe<Scalars['String']>;
+  first?: Maybe<Scalars['Int']>;
+  before?: Maybe<Scalars['String']>;
+  last?: Maybe<Scalars['Int']>;
+};
+
+
+/**
+ * An organisation is the central point for all data connected to an organisation. An organisation
+ * can be a business, a company, an association or just a branch within such an entity.
+ */
+export type OrganisationCustomersArgs = {
   after?: Maybe<Scalars['String']>;
   first?: Maybe<Scalars['Int']>;
   before?: Maybe<Scalars['String']>;
@@ -678,6 +692,35 @@ export type ApiKeyPermissionLevel =
   /** This powerful token allows you to take full control over your account. If you need this type of token, please contact our support to discuss you use case. */
   | 'SUPERADMIN';
 
+/** A connection to a list of items. */
+export type CustomerConnection = {
+  __typename: 'CustomerConnection';
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** A list of edges. */
+  edges?: Maybe<Array<Maybe<CustomerEdge>>>;
+};
+
+/** An edge in a connection. */
+export type CustomerEdge = {
+  __typename: 'CustomerEdge';
+  /** The item at the end of the edge */
+  node?: Maybe<Customer>;
+  /** A cursor for use in pagination */
+  cursor: Scalars['String'];
+};
+
+/** Data related to a customer of your business. */
+export type Customer = {
+  __typename: 'Customer';
+  /** A unique identifier for this customer. */
+  id: Scalars['ID'];
+  /** The email of the customer. */
+  email: Scalars['String'];
+  /** The name of the customer. */
+  name: Scalars['String'];
+};
+
 /** Each user has an account associated with them. */
 export type Account = {
   __typename: 'Account';
@@ -966,6 +1009,15 @@ export type ModelAction = {
    * If no value is provided for `validFrom` uses the current point in time.
    */
   addSchedule?: Maybe<ModelAddSchedule>;
+  /**
+   * Removes a schedule from the model. This is only possible, if the schedule is in the
+   * future. Schedules in the past cannot be removed, instead their validity should simply be
+   * adjusted.
+   *
+   * _Removing future schedules will not remove already booked slots. These slots will stay
+   * valid._
+   */
+  removeSchedule?: Maybe<ModelRemoveSchedule>;
 };
 
 /** Arguments needed for the _SetDenomination_ action. */
@@ -984,6 +1036,12 @@ export type ModelAddSchedule = {
   availabilityId: Scalars['ID'];
   /** This is the booking mode for this schedule. */
   bookingMode: BookingMode;
+};
+
+/** Arguments needed for the _RemoveSchedule_ action. */
+export type ModelRemoveSchedule = {
+  /** The ID of the schedule that should be removed. */
+  id: Scalars['ID'];
 };
 
 /** Mutation result of the _createAsset_ mutation. */
@@ -1134,10 +1192,18 @@ export type UpdateReservationResult = {
 
 /** Input type that holds all available actions on the _Reservation_ type. */
 export type ReservationAction = {
+  /** Link an existing customer to this reservation. Please note, that the authentication of the user needs to be taken over by the client application. Currently, if the ID of a customer is known, anyone with an */
+  linkExistingCustomer?: Maybe<ReservationLinkExistingCustomer>;
   /** Cancel a reservation that has not yet been checked out. */
   abort?: Maybe<Scalars['EmptyPayload']>;
   /** Complete (checkout) a reservation making it permanent. Depending on the settings, some customer data has to be provided or a payment has to succeed. */
   complete?: Maybe<ReservationComplete>;
+};
+
+/** Arguments needed for the _LinkExistingCustomer_ action. */
+export type ReservationLinkExistingCustomer = {
+  /** The ID of an existing customer in the database. */
+  customerId: Scalars['ID'];
 };
 
 
@@ -1182,6 +1248,14 @@ export type TimeSlotFragment = { __typename: 'TimeSlot', startTime: string, endT
 export type ReservationFragment = { __typename: 'Reservation', id: string, startTime: string, endTime: string, completedAt?: Maybe<string>, model?: Maybe<{ __typename: 'Model', id: string, denomination: string }> };
 
 export type PageInfoFieldsFragment = { __typename: 'PageInfo', hasNextPage: boolean, endCursor?: Maybe<string> };
+
+type UserError_IllegalActionError_Fragment = { __typename: 'IllegalActionError', message: string };
+
+type UserError_ValidationError_Fragment = { __typename: 'ValidationError', field: string, hint?: Maybe<string>, message: string };
+
+type UserError_DataInconsistencyError_Fragment = { __typename: 'DataInconsistencyError', message: string };
+
+export type UserErrorFragment = UserError_IllegalActionError_Fragment | UserError_ValidationError_Fragment | UserError_DataInconsistencyError_Fragment;
 
 export type AllCategoriesQueryVariables = Exact<{
   first?: Maybe<Scalars['Int']>;
@@ -1231,7 +1305,10 @@ export type ModelsByCategoryQueryVariables = Exact<{
 export type ModelsByCategoryQuery = { __typename: 'Query', category?: Maybe<{ __typename: 'Category', models: { __typename: 'ModelConnection', pageInfo: (
         { __typename: 'PageInfo' }
         & PageInfoFieldsFragment
-      ) } }> };
+      ), edges?: Maybe<Array<Maybe<{ __typename: 'ModelEdge', node?: Maybe<(
+          { __typename: 'Model' }
+          & ModelFragment
+        )> }>>> } }> };
 
 export type SingleModelQueryVariables = Exact<{
   id: Scalars['ID'];
@@ -1313,7 +1390,16 @@ export type CreateReservationMutationVariables = Exact<{
 }>;
 
 
-export type CreateReservationMutation = { __typename: 'Mutation', createReservation: { __typename: 'CreateReservationResult', success: boolean, errors: Array<{ __typename: 'IllegalActionError', message: string } | { __typename: 'ValidationError', field: string, hint?: Maybe<string>, message: string } | { __typename: 'DataInconsistencyError', message: string }>, reservation?: Maybe<(
+export type CreateReservationMutation = { __typename: 'Mutation', createReservation: { __typename: 'CreateReservationResult', success: boolean, errors: Array<(
+      { __typename: 'IllegalActionError' }
+      & UserError_IllegalActionError_Fragment
+    ) | (
+      { __typename: 'ValidationError' }
+      & UserError_ValidationError_Fragment
+    ) | (
+      { __typename: 'DataInconsistencyError' }
+      & UserError_DataInconsistencyError_Fragment
+    )>, reservation?: Maybe<(
       { __typename: 'Reservation' }
       & ReservationFragment
     )> } };
@@ -1324,7 +1410,16 @@ export type UpdateReservationMutationVariables = Exact<{
 }>;
 
 
-export type UpdateReservationMutation = { __typename: 'Mutation', updateReservation: { __typename: 'UpdateReservationResult', success: boolean, errors: Array<{ __typename: 'IllegalActionError', message: string } | { __typename: 'ValidationError', field: string, hint?: Maybe<string>, message: string } | { __typename: 'DataInconsistencyError', message: string }>, reservation?: Maybe<(
+export type UpdateReservationMutation = { __typename: 'Mutation', updateReservation: { __typename: 'UpdateReservationResult', success: boolean, errors: Array<(
+      { __typename: 'IllegalActionError' }
+      & UserError_IllegalActionError_Fragment
+    ) | (
+      { __typename: 'ValidationError' }
+      & UserError_ValidationError_Fragment
+    ) | (
+      { __typename: 'DataInconsistencyError' }
+      & UserError_DataInconsistencyError_Fragment
+    )>, reservation?: Maybe<(
       { __typename: 'Reservation' }
       & ReservationFragment
     )> } };
@@ -1382,8 +1477,19 @@ export const ReservationFragmentDoc = gql`
     `;
 export const PageInfoFieldsFragmentDoc = gql`
     fragment PageInfoFields on PageInfo {
+  __typename
   hasNextPage
   endCursor
+}
+    `;
+export const UserErrorFragmentDoc = gql`
+    fragment UserError on UserError {
+  __typename
+  message
+  ... on ValidationError {
+    field
+    hint
+  }
 }
     `;
 export const AllCategoriesDocument = gql`
@@ -1434,10 +1540,16 @@ export const ModelsByCategoryDocument = gql`
       pageInfo {
         ...PageInfoFields
       }
+      edges {
+        node {
+          ...Model
+        }
+      }
     }
   }
 }
-    ${PageInfoFieldsFragmentDoc}`;
+    ${PageInfoFieldsFragmentDoc}
+${ModelFragmentDoc}`;
 export const SingleModelDocument = gql`
     query SingleModel($id: ID!) {
   model(id: $id) {
@@ -1515,35 +1627,29 @@ export const CreateReservationDocument = gql`
   createReservation(draft: $draft) {
     success
     errors {
-      message
-      ... on ValidationError {
-        field
-        hint
-      }
+      ...UserError
     }
     reservation {
       ...Reservation
     }
   }
 }
-    ${ReservationFragmentDoc}`;
+    ${UserErrorFragmentDoc}
+${ReservationFragmentDoc}`;
 export const UpdateReservationDocument = gql`
     mutation UpdateReservation($id: ID!, $actions: [ReservationAction!]!) {
   updateReservation(id: $id, actions: $actions) {
     success
     errors {
-      message
-      ... on ValidationError {
-        field
-        hint
-      }
+      ...UserError
     }
     reservation {
       ...Reservation
     }
   }
 }
-    ${ReservationFragmentDoc}`;
+    ${UserErrorFragmentDoc}
+${ReservationFragmentDoc}`;
 
 export type SdkFunctionWrapper = <T>(action: () => Promise<T>) => Promise<T>;
 

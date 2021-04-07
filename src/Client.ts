@@ -1,25 +1,21 @@
 import { GraphQLClient } from 'graphql-request';
-import {
-  createPaginatedQuery,
-  createVariablelessPaginatedQuery,
-  PaginatedQuery,
-  VariablelessPaginatedQuery,
-} from './createPaginatedQuery';
+import { createPaginatedQuery, createVariablelessPaginatedQuery } from './createPaginatedQuery';
+import { AssetsScope } from './entities/asset';
+import { CategoriesScope } from './entities/category';
+import { ModelsScope } from './entities/model';
+import { reservationActionCreator, ReservationsScope } from './entities/reservation';
+import { TimeSlot, TimeSlotsScope } from './entities/timeSlot';
 import { NotFoundError } from './errors';
 import {
   AssetFragment,
-  CategoryFragment,
   getSdk,
   ModelFragment,
-  ReservationAction as ReservationActionObject,
-  ReservationDraft,
-  ReservationFragment,
   Sdk,
   TimeSlotFilter,
-  TimeSlotFragment,
 } from './generated/graphql-operations';
 
 const DEFAULT_ENDPOINT = 'https://api.beta.leasy.dev/graphql';
+const SDK_VERSION = '0.0.1';
 
 export type ClientOptions = {
   apiKey: string;
@@ -27,21 +23,28 @@ export type ClientOptions = {
 };
 
 export default class Client {
+  /** @internal */
   private client: GraphQLClient;
+  /** @internal */
   private sdk: Sdk;
 
+  /** All operations available for categories */
   public categories: CategoriesScope;
+  /** All operations available for models */
   public models: ModelsScope;
+  /** All operations available for assets */
   public assets: AssetsScope;
+  /** All operations available for timeSlots */
   public timeSlots: TimeSlotsScope;
-  public reservations: ReservationScope;
+  /** All operations available for reservations */
+  public reservations: ReservationsScope;
 
   constructor(options: ClientOptions) {
     const endpoint = options.endpoint ?? DEFAULT_ENDPOINT;
     this.client = new GraphQLClient(endpoint, {
       headers: {
         authorization: `Bearer ${options.apiKey}`,
-        'X-Leasy-SDK-Version': '0.0.1',
+        'X-Leasy-SDK-Version': SDK_VERSION,
       },
     });
     this.sdk = getSdk(this.client);
@@ -94,10 +97,10 @@ export default class Client {
       ),
     };
     this.timeSlots = {
-      byModel: createPaginatedQuery<
-        TimeSlotFragment,
-        { modelId: string; filter?: TimeSlotFilter | null }
-      >(this.sdk.TimeSlotsByModel, result => result.model?.slots),
+      byModel: createPaginatedQuery<TimeSlot, { modelId: string; filter?: TimeSlotFilter | null }>(
+        this.sdk.TimeSlotsByModel,
+        result => result.model?.slots,
+      ),
     };
     this.reservations = {
       get: (id: string) =>
@@ -112,14 +115,15 @@ export default class Client {
           if (result.createReservation.reservation) {
             return result.createReservation.reservation;
           }
-          throw new Error('Some error ocurred while creating a reservation.');
+          throw new Error(
+            'Some error(s) ocurred while creating a reservation:\n\n' +
+              joinErrors(result.createReservation.errors),
+          );
         }),
       update: (id, actionCreator) => {
         let actions;
         if (typeof actionCreator === 'function') {
-          actions = actionCreator({
-            complete: () => ({ complete: {} }),
-          });
+          actions = actionCreator(reservationActionCreator);
         } else {
           actions = actionCreator;
         }
@@ -134,113 +138,6 @@ export default class Client {
   }
 }
 
-export type CategoriesScope = {
-  /**
-   * Load a single category using its uniquely identifying ID.
-   * @param id The ID of the category to load
-   * @throws {NotFoundError} if the category was not found, this will throw a not found error
-   */
-  get(id: string): Promise<CategoryFragment>;
-  /**
-   * Load all categories in the current organisation.
-   * @returns A paginated result, starting with the first page and function to navigate pages
-   */
-  all: VariablelessPaginatedQuery<CategoryFragment>;
-};
-
-export type ModelsScope = {
-  /**
-   * Load a single model using its uniquely identifying ID.
-   * @param id The ID of the model to load
-   * @throws {NotFoundError} if the model was not found, this will throw a not found error
-   */
-  get(id: string): Promise<ModelFragment>;
-  /**
-   * Load all categories in the current organisation.
-   * @returns A paginated result, starting with the first page and function to navigate pages
-   */
-  all: VariablelessPaginatedQuery<ModelFragment>;
-  /**
-   * Load all models that belong to a specified category.
-   * @param categoryId The ID of the category
-   * @throws {NotFoundError} if the category was not found, this will throw a not found error
-   */
-  byCategory: PaginatedQuery<ModelFragment, { categoryId: string }>;
-};
-
-export type AssetsScope = {
-  /**
-   * Load a single asset using its uniquely identifying ID.
-   * @param id The ID of the asset to load
-   * @throws {NotFoundError} if the asset was not found, this will throw a not found error
-   */
-  get(id: string): Promise<AssetFragment>;
-  /**
-   * Load all assets in the current organisation.
-   * @returns A paginated result, starting with the first page and function to navigate pages
-   */
-  all: VariablelessPaginatedQuery<AssetFragment>;
-  /**
-   * Load all assets that belong to a specified model.
-   * @param modelId The ID of the model
-   * @throws {NotFoundError} if the model was not found, this will throw a not found error
-   */
-  byModel: PaginatedQuery<AssetFragment, { modelId: string }>;
-};
-
-type ReservationAction =
-  | Pick<ReservationActionObject, 'complete'>
-  | Pick<ReservationActionObject, 'abort'>;
-
-type ReservationActionCreator = {
-  /**
-   * Complete a reservation, making it permanent. Reservations expire after some time, if they are
-   * not completed
-   */
-  complete(): ReservationAction;
-  /**
-   * Abort a reservation, freeing the resources in the reservation. Reservations expire
-   * automatically after some time, but sometimes we can make them available ealier.
-   */
-  complete(): ReservationAction;
-};
-
-type UpdateFn<TAction, TActionCreator, TResult> = (
-  /** The ID of the resouce to update. */
-  id: string,
-  /** Pass actions directly or  */
-  actions: TAction | TAction[] | ((creator: TActionCreator) => TAction | TAction[]),
-) => Promise<TResult>;
-
-export type ReservationScope = {
-  /**
-   * Load a single resource using its uniquely identifying ID.
-   * @param id The ID of the resource to load
-   * @throws {NotFoundError} if the resource was not found, this will throw a not found error
-   */
-  get(id: string): Promise<ReservationFragment>;
-  /**
-   * Create a new reservation for a specified model.
-   * @param draft Input seed data to create a reservation
-   */
-  create(draft: ReservationDraft): Promise<ReservationFragment>;
-  /**
-   * Update a reservation. There are various possible actions available which can be discovered
-   * via autocomplete. The function also accepts the convenient action creator consumer function,
-   * that allows you to call methods on the action creator:
-   *
-   * ```ts
-   * await leasy.reservation.update("xxxx-xxxx-xxxx-xxxx", reservation => [
-   *   reservation.complete()
-   * ]);
-   * ```
-   *
-   * @param id The unique identifier of the reservation, that you want to update
-   * @param actions A single action, an array of actions or action creator consumer function
-   */
-  update: UpdateFn<ReservationAction, ReservationActionCreator, ReservationFragment>;
-};
-
-export type TimeSlotsScope = {
-  byModel: PaginatedQuery<TimeSlotFragment, { modelId: string; filter?: Partial<TimeSlotFilter> }>;
-};
+function joinErrors(errors: ReadonlyArray<{ __typename: string; message: string }>) {
+  return errors.map(error => error.__typename + ':\n' + error.message).join('\n\n');
+}

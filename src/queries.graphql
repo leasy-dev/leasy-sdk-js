@@ -45,8 +45,18 @@ fragment Reservation on Reservation {
 }
 
 fragment PageInfoFields on PageInfo {
+  __typename
   hasNextPage
   endCursor
+}
+
+fragment UserError on UserError {
+  __typename
+  message
+  ... on ValidationError {
+    field
+    hint
+  }
 }
 
 query AllCategories($first: Int, $after: String) {
@@ -90,6 +100,11 @@ query ModelsByCategory($categoryId: ID!, $first: Int, $after: String) {
     models(first: $first, after: $after) {
       pageInfo {
         ...PageInfoFields
+      }
+      edges {
+        node {
+          ...Model
+        }
       }
     }
   }
@@ -162,11 +177,7 @@ mutation CreateReservation($draft: ReservationDraft!) {
   createReservation(draft: $draft) {
     success
     errors {
-      message
-      ... on ValidationError {
-        field
-        hint
-      }
+      ...UserError
     }
     reservation {
       ...Reservation
@@ -178,11 +189,7 @@ mutation UpdateReservation($id: ID!, $actions: [ReservationAction!]!) {
   updateReservation(id: $id, actions: $actions) {
     success
     errors {
-      message
-      ... on ValidationError {
-        field
-        hint
-      }
+      ...UserError
     }
     reservation {
       ...Reservation

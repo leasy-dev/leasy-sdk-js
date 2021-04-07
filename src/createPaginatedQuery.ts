@@ -1,4 +1,4 @@
-import { NotFoundError } from "./errors";
+import { NotFoundError } from './errors';
 
 export type Page<TNode> = {
   nodes: (TNode | null)[];
@@ -56,7 +56,7 @@ export function createPaginatedQuery<TNode, TVariables>(
     const pages: Array<Promise<Page<TNode>>> = [];
 
     function paginate(index: number, paginationVars: PaginationVars): Promise<Page<TNode>> {
-      if (pages[index]) {
+      if (!pages[index]) {
         pages[index] = queryFn({ ...variables, ...paginationVars })
           .then(accessFn)
           .then(
