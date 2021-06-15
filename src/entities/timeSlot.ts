@@ -4,5 +4,5 @@ import { TimeSlotFragment as TimeSlot, TimeSlotFilter } from '../generated/graph
 export { TimeSlot };
 
 export type TimeSlotsScope = {
-  byModel: PaginatedQuery<TimeSlot, { modelId: string; filter?: Partial<TimeSlotFilter> }>;
+  byResource: PaginatedQuery<TimeSlot, { resourceId: string; filter?: Partial<TimeSlotFilter> }>;
 };

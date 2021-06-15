@@ -5,7 +5,7 @@ It comes with TypeScript types and comprehensive JSDoc comments to integrate nic
 The library works in the browser as well as in Node.js.
 In the browser, this library should be used with caution: The bundle size is large and expected to grow.
 The current design choice of wrapping methods in a class does not allow for code splitting.
-If you only need to make simple read operations, I recommend direct GraphQL calls to the API endpoint with a read key.
+If you only need to make simple read operations, we recommend direct GraphQL calls to the API endpoint with a read key.
 
 ## Installation
 

@@ -1,11 +1,19 @@
 import {
-  ReservationAction as ReservationActionObject,
   ReservationDraft,
-  ReservationFragment as Reservation,
+  BookingFragment as Booking,
+  ReservationAction as ReservationActionObject,
 } from '../generated/graphql-operations';
 import { UpdateFn } from '../types';
 
-export { Reservation };
+export { Booking };
+
+export type Reservation = {
+  __typename: 'Reservation';
+  id: string;
+  expiresAt?: string | null | undefined;
+  completedAt?: string | null | undefined;
+  bookings: Booking[];
+};
 
 export type ReservationsScope = {
   /**
@@ -34,11 +42,14 @@ export type ReservationsScope = {
    * @param actions A single action, an array of actions or action creator consumer function
    */
   update: UpdateFn<ReservationAction, ReservationActionCreator, Reservation>;
+  /**
+   * Cancel a pending reservation and free all the resources that are booked by the reservation.
+   * @param id The unique identifier of the reservation that you want to cancel/delete
+   */
+  delete(id: string): Promise<void>;
 };
 
-export type ReservationAction =
-  | Pick<ReservationActionObject, 'complete'>
-  | Pick<ReservationActionObject, 'abort'>;
+export type ReservationAction = Pick<ReservationActionObject, 'complete'>;
 
 export type ReservationActionCreator = {
   /**
@@ -46,18 +57,10 @@ export type ReservationActionCreator = {
    * not completed
    */
   complete(): ReservationAction;
-  /**
-   * Abort a reservation, freeing the resources in the reservation. Reservations expire
-   * automatically after some time, but sometimes we can make them available ealier.
-   */
-  abort(): ReservationAction;
 };
 
 export const reservationActionCreator: ReservationActionCreator = {
   complete() {
     return { complete: {} };
-  },
-  abort() {
-    return { abort: {} };
   },
 };

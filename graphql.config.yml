@@ -17,3 +17,9 @@ extensions:
           nonOptionalTypename: true
           preResolveTypes: true
           enumsAsTypes: true
+          skipTypename: true
+          avoidOptionals:
+            field: true
+            inputValue: false
+            object: false
+            defaultValue: false

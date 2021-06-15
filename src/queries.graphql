@@ -1,27 +1,30 @@
-fragment Category on Category {
+fragment Resource on Resource {
   __typename
   id
   denomination
-}
-
-fragment Model on Model {
-  __typename
-  id
-  denomination
-  category {
-    ...Category
-  }
-}
-
-fragment Asset on Asset {
-  __typename
-  id
-  denomination
-  model {
+  calendar {
     __typename
     id
     denomination
   }
+}
+
+fragment Calendar on Calendar {
+  __typename
+  id
+  denomination
+}
+
+fragment Booking on Booking {
+  __typename
+  id
+  resource {
+    __typename
+    id
+    denomination
+  }
+  startTime
+  endTime
 }
 
 fragment TimeSlot on TimeSlot {
@@ -34,14 +37,15 @@ fragment TimeSlot on TimeSlot {
 fragment Reservation on Reservation {
   __typename
   id
-  startTime
-  endTime
-  model {
-    __typename
-    id
-    denomination
-  }
+  expiresAt
   completedAt
+  bookings(first: 100) {
+    edges {
+      node {
+        ...Booking
+      }
+    }
+  }
 }
 
 fragment PageInfoFields on PageInfo {
@@ -59,101 +63,50 @@ fragment UserError on UserError {
   }
 }
 
-query AllCategories($first: Int, $after: String) {
+query AllResources($first: Int, $after: String) {
   organisation {
-    categories(first: $first, after: $after) {
+    resources(first: $first, after: $after) {
       pageInfo {
         ...PageInfoFields
       }
       edges {
         node {
-          ...Category
+          ...Resource
         }
       }
     }
   }
 }
 
-query SingleCategory($id: ID!) {
-  category(id: $id) {
-    ...Category
+query SingleResource($id: ID!) {
+  resource(id: $id) {
+    ...Resource
   }
 }
 
-query AllModels($first: Int, $after: String) {
+query AllCalendars($first: Int, $after: String) {
   organisation {
-    models(first: $first, after: $after) {
+    calendars(first: $first, after: $after) {
       pageInfo {
         ...PageInfoFields
       }
       edges {
         node {
-          ...Model
+          ...Calendar
         }
       }
     }
   }
 }
 
-query ModelsByCategory($categoryId: ID!, $first: Int, $after: String) {
-  category(id: $categoryId) {
-    models(first: $first, after: $after) {
-      pageInfo {
-        ...PageInfoFields
-      }
-      edges {
-        node {
-          ...Model
-        }
-      }
-    }
+query SingleCalendar($id: ID!) {
+  calendar(id: $id) {
+    ...Calendar
   }
 }
 
-query SingleModel($id: ID!) {
-  model(id: $id) {
-    ...Model
-  }
-}
-
-query AllAssets($first: Int, $after: String) {
-  organisation {
-    assets(first: $first, after: $after) {
-      pageInfo {
-        ...PageInfoFields
-      }
-      edges {
-        node {
-          ...Asset
-        }
-      }
-    }
-  }
-}
-
-query SingleAsset($id: ID!) {
-  asset(id: $id) {
-    ...Asset
-  }
-}
-
-query AssetsByModel($modelId: ID!, $first: Int, $after: String) {
-  model(id: $modelId) {
-    assets(first: $first, after: $after) {
-      pageInfo {
-        ...PageInfoFields
-      }
-      edges {
-        node {
-          ...Asset
-        }
-      }
-    }
-  }
-}
-
-query TimeSlotsByModel($modelId: ID!, $filter: TimeSlotFilter, $first: Int, $after: String) {
-  model(id: $modelId) {
+query TimeSlotsByResource($resourceId: ID!, $filter: TimeSlotFilter, $first: Int, $after: String) {
+  resource(id: $resourceId) {
     slots(filter: $filter, first: $first, after: $after) {
       pageInfo {
         ...PageInfoFields
@@ -193,6 +146,15 @@ mutation UpdateReservation($id: ID!, $actions: [ReservationAction!]!) {
     }
     reservation {
       ...Reservation
+    }
+  }
+}
+
+mutation DeleteReservation($id: ID!) {
+  deleteReservation(id: $id) {
+    success
+    errors {
+      ...UserError
     }
   }
 }

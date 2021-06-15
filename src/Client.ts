@@ -1,21 +1,14 @@
 import { GraphQLClient } from 'graphql-request';
 import { createPaginatedQuery, createVariablelessPaginatedQuery } from './createPaginatedQuery';
-import { AssetsScope } from './entities/asset';
-import { CategoriesScope } from './entities/category';
-import { ModelsScope } from './entities/model';
-import { reservationActionCreator, ReservationsScope } from './entities/reservation';
+import { ResourcesScope } from './entities/resource';
+import { CalendarsScope } from './entities/calendar';
+import { Reservation, reservationActionCreator, ReservationsScope } from './entities/reservation';
 import { TimeSlot, TimeSlotsScope } from './entities/timeSlot';
-import { NotFoundError } from './errors';
-import {
-  AssetFragment,
-  getSdk,
-  ModelFragment,
-  Sdk,
-  TimeSlotFilter,
-} from './generated/graphql-operations';
+import { mapErrorsFromGraphQL, NotFoundError } from './errors';
+import { getSdk, Sdk, TimeSlotFilter } from './generated/graphql-operations';
 
 const DEFAULT_ENDPOINT = 'https://api.beta.leasy.dev/graphql';
-const SDK_VERSION = '0.0.1';
+const SDK_VERSION = '0.0.3';
 
 export type ClientOptions = {
   apiKey: string;
@@ -28,12 +21,10 @@ export default class Client {
   /** @internal */
   private sdk: Sdk;
 
-  /** All operations available for categories */
-  public categories: CategoriesScope;
-  /** All operations available for models */
-  public models: ModelsScope;
+  /** All operations available for calendars */
+  public calendars: CalendarsScope;
   /** All operations available for assets */
-  public assets: AssetsScope;
+  public resources: ResourcesScope;
   /** All operations available for timeSlots */
   public timeSlots: TimeSlotsScope;
   /** All operations available for reservations */
@@ -49,76 +40,58 @@ export default class Client {
     });
     this.sdk = getSdk(this.client);
 
-    this.categories = {
+    this.calendars = {
       get: (id: string) =>
-        this.sdk.SingleCategory({ id }).then(result => {
-          if (result.category) {
-            return result.category;
+        this.sdk.SingleCalendar({ id }).then(result => {
+          if (result.calendar) {
+            return result.calendar;
           }
           throw new NotFoundError();
         }),
       all: createVariablelessPaginatedQuery(
-        this.sdk.AllCategories,
-        result => result.organisation.categories,
-      ),
-    };
-    this.models = {
-      get: (id: string) =>
-        this.sdk.SingleModel({ id }).then(result => {
-          if (result.model) {
-            return result.model;
-          }
-          throw new NotFoundError();
-        }),
-      all: createVariablelessPaginatedQuery(
-        this.sdk.AllModels,
+        this.sdk.AllCalendars,
         result => result.organisation?.models,
       ),
-      byCategory: createPaginatedQuery<ModelFragment, { categoryId: string }>(
-        this.sdk.ModelsByCategory,
-        result => result.category?.models,
-      ),
     };
-    this.assets = {
+    this.resources = {
       get: (id: string) =>
-        this.sdk.SingleAsset({ id }).then(result => {
-          if (result.asset) {
-            return result.asset;
+        this.sdk.SingleResource({ id }).then(result => {
+          if (result.resource) {
+            return result.resource;
           }
           throw new NotFoundError();
         }),
       all: createVariablelessPaginatedQuery(
-        this.sdk.AllModels,
+        this.sdk.AllResources,
         result => result.organisation?.models,
-      ),
-      byModel: createPaginatedQuery<AssetFragment, { modelId: string }>(
-        this.sdk.AssetsByModel,
-        result => result.model?.assets,
       ),
     };
     this.timeSlots = {
-      byModel: createPaginatedQuery<TimeSlot, { modelId: string; filter?: TimeSlotFilter | null }>(
-        this.sdk.TimeSlotsByModel,
-        result => result.model?.slots,
-      ),
+      byResource: createPaginatedQuery<
+        TimeSlot,
+        { resourceId: string; filter?: TimeSlotFilter | null }
+      >(this.sdk.TimeSlotsByResource, result => result.resource?.slots),
     };
     this.reservations = {
-      get: (id: string) =>
+      get: (id: string): Promise<Reservation> =>
         this.sdk.SingleReservation({ id }).then(result => {
           if (result.reservation) {
-            return result.reservation;
+            return {
+              ...result.reservation,
+              bookings: connectionToArray(result.reservation.bookings),
+            };
           }
           throw new NotFoundError();
         }),
       create: draft =>
         this.sdk.CreateReservation({ draft }).then(result => {
           if (result.createReservation.reservation) {
-            return result.createReservation.reservation;
+            return {
+              ...result.createReservation.reservation,
+              bookings: connectionToArray(result.createReservation.reservation.bookings),
+            };
           }
-          throw new Error(
-            'Some error(s) ocurred while creating a reservation:\n\n' +
-              joinErrors(result.createReservation.errors),
-          );
+          throw mapErrorsFromGraphQL(result.createReservation.errors)[0];
         }),
       update: (id, actionCreator) => {
         let actions;
@@ -129,15 +102,34 @@ export default class Client {
         }
         return this.sdk.UpdateReservation({ id, actions }).then(result => {
           if (result.updateReservation.reservation) {
-            return result.updateReservation.reservation;
+            return {
+              ...result.updateReservation.reservation,
+              bookings: connectionToArray(result.updateReservation.reservation.bookings),
+            };
           }
-          throw new Error('Some error ocurred while updating a reservation.');
+          throw mapErrorsFromGraphQL(result.updateReservation.errors)[0];
+        });
+      },
+      delete: id => {
+        return this.sdk.DeleteReservation({ id }).then(result => {
+          if (!result.deleteReservation.success) {
+            throw mapErrorsFromGraphQL(result.deleteReservation.errors)[0];
+          }
         });
       },
     };
   }
 }
 
-function joinErrors(errors: ReadonlyArray<{ __typename: string; message: string }>) {
-  return errors.map(error => error.__typename + ':\n' + error.message).join('\n\n');
+function connectionToArray<T>(connection: {
+  edges?: ({ node?: T | null | undefined } | null | undefined)[] | null | undefined;
+}): T[] {
+  const result: T[] = [];
+  for (let i = 0; connection.edges && i < connection.edges.length; i++) {
+    const node = connection.edges[i]?.node;
+    if (node !== null && typeof node !== 'undefined') {
+      result.push(node);
+    }
+  }
+  return result;
 }

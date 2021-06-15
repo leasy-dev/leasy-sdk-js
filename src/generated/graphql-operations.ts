@@ -15,15 +15,12 @@ export type Scalars = {
   Float: number;
   /** A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar. */
   DateTime: string;
-  /** A local time string (i.e., with no associated timezone) in 24-hr `HH:mm[:ss[.SSS]]` format, e.g. `14:25` or `14:25:06` or `14:25:06.123`. */
-  LocalTime: string;
   /** Empty payload scalar for actions without payloads. */
   EmptyPayload: {};
 };
 
 /** This error is thrown when the user tries to mutate an object that cannot be mutated e.g. when the object was deleted in the meantime but was still available in the UI. */
 export type IllegalActionError = UserError & {
-  __typename: 'IllegalActionError';
   /** This is a message that can be shown to the user about an error that they made. */
   message: Scalars['String'];
 };
@@ -36,27 +33,24 @@ export type UserError = {
 
 /** This error is thrown when the users supplied a value that does not fullfill the validation rules for a field. */
 export type ValidationError = UserError & {
-  __typename: 'ValidationError';
   /** This is a message that can be shown to the user about an error that they made. */
   message: Scalars['String'];
   /** Indicates the parameter, argument, or field that failed validation. */
   field: Scalars['String'];
   /** This is a hint that could help the user fill out the field. */
-  hint?: Maybe<Scalars['String']>;
+  hint: Maybe<Scalars['String']>;
 };
 
 /** This error is thrown when the user attemts an illegal action. Sometimes an action cannot be done while the data is in a certain state. In this case an IlligalActionError is returned. */
 export type DataInconsistencyError = UserError & {
-  __typename: 'DataInconsistencyError';
   /** This is a message that can be shown to the user about an error that they made. */
   message: Scalars['String'];
 };
 
 /** The root query type. */
 export type Query = {
-  __typename: 'Query';
   /** Viewer namespace for all queries dependend on the viewer context. */
-  viewer?: Maybe<Viewer>;
+  viewer: Maybe<Viewer>;
   /**
    * Query a single organisation based on it's id.
    * Most authentication tokens can only read the organisation that they were made for.
@@ -65,19 +59,17 @@ export type Query = {
    * { organisation { id } }
    * ```
    */
-  organisation?: Maybe<Organisation>;
-  /** Query a single model based on its id. */
-  model?: Maybe<Model>;
-  /** Query a single asset based on its id. */
-  asset?: Maybe<Asset>;
-  /** Get a single category by it's unique ID. */
-  category?: Maybe<Category>;
-  /** Get a single availability by it's unique ID. */
-  availability?: Maybe<Availability>;
+  organisation: Maybe<Organisation>;
   /** Get a single reservation by it's unique ID. */
-  reservation?: Maybe<Reservation>;
+  reservation: Maybe<Reservation>;
   /** List of all API key permission levels with information about their access rights. */
   apiKeyPermissionInfos: Array<ApiKeyPermissionLevelInfo>;
+  /** Get a single customer by it's unique ID. */
+  customer: Maybe<Customer>;
+  /** Get a single calendar by it's unique ID. */
+  calendar: Maybe<Calendar>;
+  /** Get a single resource by it's unique ID. */
+  resource: Maybe<Resource>;
 };
 
 
@@ -88,31 +80,25 @@ export type QueryOrganisationArgs = {
 
 
 /** The root query type. */
-export type QueryModelArgs = {
-  id: Scalars['ID'];
-};
-
-
-/** The root query type. */
-export type QueryAssetArgs = {
-  id: Scalars['ID'];
-};
-
-
-/** The root query type. */
-export type QueryCategoryArgs = {
-  id: Scalars['ID'];
-};
-
-
-/** The root query type. */
-export type QueryAvailabilityArgs = {
-  id: Scalars['ID'];
-};
-
-
-/** The root query type. */
 export type QueryReservationArgs = {
+  id: Scalars['ID'];
+};
+
+
+/** The root query type. */
+export type QueryCustomerArgs = {
+  id: Scalars['ID'];
+};
+
+
+/** The root query type. */
+export type QueryCalendarArgs = {
+  id: Scalars['ID'];
+};
+
+
+/** The root query type. */
+export type QueryResourceArgs = {
   id: Scalars['ID'];
 };
 
@@ -121,11 +107,10 @@ export type QueryReservationArgs = {
  * request.
  */
 export type Viewer = {
-  __typename: 'Viewer';
   /** List of all organisations that this user can access. */
   organisations: OrganisationConnection;
   /** The account of the current viewer. */
-  account?: Maybe<Account>;
+  account: Maybe<Account>;
 };
 
 
@@ -142,31 +127,28 @@ export type ViewerOrganisationsArgs = {
 
 /** A connection to a list of items. */
 export type OrganisationConnection = {
-  __typename: 'OrganisationConnection';
   /** Information to aid in pagination. */
   pageInfo: PageInfo;
   /** A list of edges. */
-  edges?: Maybe<Array<Maybe<OrganisationEdge>>>;
+  edges: Maybe<Array<Maybe<OrganisationEdge>>>;
 };
 
 /** Information about pagination in a connection. */
 export type PageInfo = {
-  __typename: 'PageInfo';
   /** When paginating forwards, are there more items? */
   hasNextPage: Scalars['Boolean'];
   /** When paginating backwards, are there more items? */
   hasPreviousPage: Scalars['Boolean'];
   /** When paginating backwards, the cursor to continue. */
-  startCursor?: Maybe<Scalars['String']>;
+  startCursor: Maybe<Scalars['String']>;
   /** When paginating forwards, the cursor to continue. */
-  endCursor?: Maybe<Scalars['String']>;
+  endCursor: Maybe<Scalars['String']>;
 };
 
 /** An edge in a connection. */
 export type OrganisationEdge = {
-  __typename: 'OrganisationEdge';
   /** The item at the end of the edge */
-  node?: Maybe<Organisation>;
+  node: Maybe<Organisation>;
   /** A cursor for use in pagination */
   cursor: Scalars['String'];
 };
@@ -176,25 +158,20 @@ export type OrganisationEdge = {
  * can be a business, a company, an association or just a branch within such an entity.
  */
 export type Organisation = {
-  __typename: 'Organisation';
   /** A unique identifier for this organisation. */
   id: Scalars['ID'];
   /** The name of this organisation. */
   denomination: Scalars['String'];
-  /** List of all categories defined within this organisation. */
-  categories: CategoryConnection;
-  /** Return a list of all models in this organisation. */
-  models: ModelConnection;
-  /** List of all assets available in this organisation. */
-  assets: AssetConnection;
-  /** Returns all availabilities that are registered for this organisation. */
-  availabilities: AvailabilityConnection;
+  /** List of all resources available in this organisation. */
+  resources: ResourceConnection;
   /** Returns all reservations within an organisation. */
   reservations: ReservationConnection;
+  /** Return all calendars that belong to this organisation. */
+  calendars: CalendarConnection;
   /** List of all API keys of this organisation. */
   apiKeys: ApiKeyConnection;
   /** Load all customers in this organisation. */
-  customers: CustomerConnection;
+  customers: Maybe<CustomerConnection>;
 };
 
 
@@ -202,43 +179,7 @@ export type Organisation = {
  * An organisation is the central point for all data connected to an organisation. An organisation
  * can be a business, a company, an association or just a branch within such an entity.
  */
-export type OrganisationCategoriesArgs = {
-  after?: Maybe<Scalars['String']>;
-  first?: Maybe<Scalars['Int']>;
-  before?: Maybe<Scalars['String']>;
-  last?: Maybe<Scalars['Int']>;
-};
-
-
-/**
- * An organisation is the central point for all data connected to an organisation. An organisation
- * can be a business, a company, an association or just a branch within such an entity.
- */
-export type OrganisationModelsArgs = {
-  after?: Maybe<Scalars['String']>;
-  first?: Maybe<Scalars['Int']>;
-  before?: Maybe<Scalars['String']>;
-  last?: Maybe<Scalars['Int']>;
-};
-
-
-/**
- * An organisation is the central point for all data connected to an organisation. An organisation
- * can be a business, a company, an association or just a branch within such an entity.
- */
-export type OrganisationAssetsArgs = {
-  after?: Maybe<Scalars['String']>;
-  first?: Maybe<Scalars['Int']>;
-  before?: Maybe<Scalars['String']>;
-  last?: Maybe<Scalars['Int']>;
-};
-
-
-/**
- * An organisation is the central point for all data connected to an organisation. An organisation
- * can be a business, a company, an association or just a branch within such an entity.
- */
-export type OrganisationAvailabilitiesArgs = {
+export type OrganisationResourcesArgs = {
   after?: Maybe<Scalars['String']>;
   first?: Maybe<Scalars['Int']>;
   before?: Maybe<Scalars['String']>;
@@ -251,6 +192,18 @@ export type OrganisationAvailabilitiesArgs = {
  * can be a business, a company, an association or just a branch within such an entity.
  */
 export type OrganisationReservationsArgs = {
+  after?: Maybe<Scalars['String']>;
+  first?: Maybe<Scalars['Int']>;
+  before?: Maybe<Scalars['String']>;
+  last?: Maybe<Scalars['Int']>;
+};
+
+
+/**
+ * An organisation is the central point for all data connected to an organisation. An organisation
+ * can be a business, a company, an association or just a branch within such an entity.
+ */
+export type OrganisationCalendarsArgs = {
   after?: Maybe<Scalars['String']>;
   first?: Maybe<Scalars['Int']>;
   before?: Maybe<Scalars['String']>;
@@ -282,300 +235,157 @@ export type OrganisationCustomersArgs = {
 };
 
 /** A connection to a list of items. */
-export type CategoryConnection = {
-  __typename: 'CategoryConnection';
+export type ResourceConnection = {
   /** Information to aid in pagination. */
   pageInfo: PageInfo;
   /** A list of edges. */
-  edges?: Maybe<Array<Maybe<CategoryEdge>>>;
+  edges: Maybe<Array<Maybe<ResourceEdge>>>;
 };
 
 /** An edge in a connection. */
-export type CategoryEdge = {
-  __typename: 'CategoryEdge';
+export type ResourceEdge = {
   /** The item at the end of the edge */
-  node?: Maybe<Category>;
+  node: Maybe<Resource>;
   /** A cursor for use in pagination */
   cursor: Scalars['String'];
 };
 
 /**
- * A category marks the highest level in the object hierarchie. It defines which properties the
- * models have. A car rental company might rent cars and scooters. Since these categories are so
- * different, they would be displayed differently to the end user with different properties that
- * differentiate the offered models.
+ * A single bookable resource that belongs to an organisation.
+ *
+ * A resource in your system might be a person or an asset or simply a participant slot for an
+ * event.
  */
-export type Category = {
-  __typename: 'Category';
-  /** A unique identifier for this category. */
+export type Resource = Bookable & {
+  /** A unique identifier for this resource. */
   id: Scalars['ID'];
-  /** The name for this category. */
-  denomination: Scalars['ID'];
-  /** The models that implement this category. */
-  models: ModelConnection;
-};
-
-
-/**
- * A category marks the highest level in the object hierarchie. It defines which properties the
- * models have. A car rental company might rent cars and scooters. Since these categories are so
- * different, they would be displayed differently to the end user with different properties that
- * differentiate the offered models.
- */
-export type CategoryModelsArgs = {
-  after?: Maybe<Scalars['String']>;
-  first?: Maybe<Scalars['Int']>;
-  before?: Maybe<Scalars['String']>;
-  last?: Maybe<Scalars['Int']>;
-};
-
-/** A connection to a list of items. */
-export type ModelConnection = {
-  __typename: 'ModelConnection';
-  /** Information to aid in pagination. */
-  pageInfo: PageInfo;
-  /** A list of edges. */
-  edges?: Maybe<Array<Maybe<ModelEdge>>>;
-};
-
-/** An edge in a connection. */
-export type ModelEdge = {
-  __typename: 'ModelEdge';
-  /** The item at the end of the edge */
-  node?: Maybe<Model>;
-  /** A cursor for use in pagination */
-  cursor: Scalars['String'];
-};
-
-/**
- * A model is used to group multiple assets that have the same or very similar properties.
- * Models contain the data that is primarily shown to the customer.
- */
-export type Model = {
-  __typename: 'Model';
-  /** A unique identifier for this model. */
-  id: Scalars['ID'];
-  /** The name of this model. */
-  denomination: Scalars['String'];
-  /** This model's category. */
-  category?: Maybe<Category>;
-  /** Returns all the assets that are derived from this  */
-  assets: AssetConnection;
-  /** Returns a list of schedules that are set for this model. */
-  schedules: ScheduleConnection;
+  /** The name of this resource. */
+  denomination: Maybe<Scalars['String']>;
+  /** The calendar, that defines the availability of this resource. */
+  calendar: Maybe<Calendar>;
   /** Show all the slots that are available */
-  slots: TimeSlotConnection;
+  slots: Maybe<TimeSlotConnection>;
 };
 
 
 /**
- * A model is used to group multiple assets that have the same or very similar properties.
- * Models contain the data that is primarily shown to the customer.
+ * A single bookable resource that belongs to an organisation.
+ *
+ * A resource in your system might be a person or an asset or simply a participant slot for an
+ * event.
  */
-export type ModelAssetsArgs = {
-  after?: Maybe<Scalars['String']>;
-  first?: Maybe<Scalars['Int']>;
-  before?: Maybe<Scalars['String']>;
-  last?: Maybe<Scalars['Int']>;
-};
-
-
-/**
- * A model is used to group multiple assets that have the same or very similar properties.
- * Models contain the data that is primarily shown to the customer.
- */
-export type ModelSchedulesArgs = {
-  after?: Maybe<Scalars['String']>;
-  first?: Maybe<Scalars['Int']>;
-  before?: Maybe<Scalars['String']>;
-  last?: Maybe<Scalars['Int']>;
-};
-
-
-/**
- * A model is used to group multiple assets that have the same or very similar properties.
- * Models contain the data that is primarily shown to the customer.
- */
-export type ModelSlotsArgs = {
+export type ResourceSlotsArgs = {
   after?: Maybe<Scalars['String']>;
   first?: Maybe<Scalars['Int']>;
   filter?: Maybe<TimeSlotFilter>;
 };
 
-/** A connection to a list of items. */
-export type AssetConnection = {
-  __typename: 'AssetConnection';
-  /** Information to aid in pagination. */
-  pageInfo: PageInfo;
-  /** A list of edges. */
-  edges?: Maybe<Array<Maybe<AssetEdge>>>;
-};
-
-/** An edge in a connection. */
-export type AssetEdge = {
-  __typename: 'AssetEdge';
-  /** The item at the end of the edge */
-  node?: Maybe<Asset>;
-  /** A cursor for use in pagination */
-  cursor: Scalars['String'];
-};
-
 /**
- * An asset is a single sharable resource that belongs to the organisation. Since assets in a
- * sharing business don't leave the inventory of the business, the asset needs to be tracked and
- * managed over time.
+ * Abstract type for an entity that can be booked. This is used to allow resources and resource
+ * groups to have the same interface and make booking of these groups similar. Furthermore, no two
+ * bookables have the same ID.
  */
-export type Asset = {
-  __typename: 'Asset';
-  /** A unique identifier for this asset. */
+export type Bookable = {
+  /** A unique identifier for this bookable entity. */
   id: Scalars['ID'];
-  /** The name of this asset. */
-  denomination: Scalars['String'];
-  /** The model of this asset. */
-  model: Model;
+  /** Potentially a name to show to the user, but not all bookables might have a name. */
+  denomination: Maybe<Scalars['String']>;
 };
 
-/** A connection to a list of items. */
-export type ScheduleConnection = {
-  __typename: 'ScheduleConnection';
-  /** Information to aid in pagination. */
-  pageInfo: PageInfo;
-  /** A list of edges. */
-  edges?: Maybe<Array<Maybe<ScheduleEdge>>>;
-};
-
-/** An edge in a connection. */
-export type ScheduleEdge = {
-  __typename: 'ScheduleEdge';
-  /** The item at the end of the edge */
-  node?: Maybe<Schedule>;
-  /** A cursor for use in pagination */
-  cursor: Scalars['String'];
-};
-
-/** A schedule describes when and how slots for a specific resource are available. */
-export type Schedule = {
-  __typename: 'Schedule';
-  /** A unique identifier for this schedule. */
+/** A calendar is a single bookable entity that saves rules for slots. */
+export type Calendar = {
+  /** A unique identifier for this calendar. */
   id: Scalars['ID'];
-  /** The first day that this schedule is valid. */
-  validFrom: Scalars['DateTime'];
-  /** The first day that this schedule is valid. */
-  validUntil?: Maybe<Scalars['DateTime']>;
-  /** The booking mode describes in which way bookings are being made. */
-  bookingMode: BookingMode;
-  /** Describes timeframes on certain days and times of the day accross a week. */
-  availability: Availability;
+  /** The human readable name for this calendar. */
+  denomination: Maybe<Scalars['String']>;
+  /** List of all rules connected to this calendar. */
+  rules: EventRuleConnection;
+  /**
+   * List of all the events in this calendar. Events are calculated from calendar rules and
+   * returned here. Use the filter object to select a certain time frame or the pagination as the
+   * amount of events is potentially infinite.
+   */
+  events: EventConnection;
 };
 
 
-/** Times within an availability can be booked with different booking modes. */
-export type BookingMode =
-  /** In the `BLOCK` booking mode, bookings always span the whole availability section. */
-  | 'BLOCK'
-  /** This booking mode allows bookings of arbitrary length as long as the slot is within the business hours of the availability. This mode is great when you want to encode the booking logic onto some backend logic and allow your backend to make bookings as it wants. */
-  | 'FREE';
-
-/** Availabilities are used to define business hours or generally time frames in which certain assets are available. */
-export type Availability = {
-  __typename: 'Availability';
-  /** A unique identifier for this availability. */
-  id: Scalars['ID'];
-  /** The name of this availability. Useful to identify it in the UI. */
-  denomination?: Maybe<Scalars['String']>;
-  /** Schedule rules describe the avaiability of a schedule. */
-  rules: AvailabilityRuleConnection;
-};
-
-
-/** Availabilities are used to define business hours or generally time frames in which certain assets are available. */
-export type AvailabilityRulesArgs = {
+/** A calendar is a single bookable entity that saves rules for slots. */
+export type CalendarEventsArgs = {
   after?: Maybe<Scalars['String']>;
   first?: Maybe<Scalars['Int']>;
-  before?: Maybe<Scalars['String']>;
-  last?: Maybe<Scalars['Int']>;
 };
 
 /** A connection to a list of items. */
-export type AvailabilityRuleConnection = {
-  __typename: 'AvailabilityRuleConnection';
+export type EventRuleConnection = {
   /** Information to aid in pagination. */
   pageInfo: PageInfo;
   /** A list of edges. */
-  edges?: Maybe<Array<Maybe<AvailabilityRuleEdge>>>;
+  edges: Maybe<Array<Maybe<EventRuleEdge>>>;
 };
 
 /** An edge in a connection. */
-export type AvailabilityRuleEdge = {
-  __typename: 'AvailabilityRuleEdge';
+export type EventRuleEdge = {
   /** The item at the end of the edge */
-  node?: Maybe<AvailabilityRule>;
+  node: Maybe<EventRule>;
   /** A cursor for use in pagination */
   cursor: Scalars['String'];
 };
 
-/**
- * A schedule rule describes a time span on certain days.
- * Multiple schedule rules can form complex time tables.
- */
-export type AvailabilityRule = {
-  __typename: 'AvailabilityRule';
-  /** List of weekdays that have the time slots of this rule. */
-  weekdays: Array<Weekday>;
-  /** When do the slots of this rule start? */
-  startTime: Scalars['LocalTime'];
-  /** When do the slots of this rule end? */
-  endTime: Scalars['LocalTime'];
-  /** Should the slots not be available on holidays? */
-  excludeHolidays: Scalars['Boolean'];
+/** An event rule is a description of a single event or a set of events. It describes a pattern from which the concrete events can be derived. To put this more simply: An event rule is our way of abstracting over events, reoccuring events, business hours and other calendar items. */
+export type EventRule = {
+  /** Lower time bound of this event rule. */
+  start: Scalars['DateTime'];
+  /** Upper time bound of this event rule. */
+  end: Scalars['DateTime'];
 };
 
-export type Weekday =
-  /** An enum value to represent Monday. */
-  | 'MONDAY'
-  /** An enum value to represent Tuesday. */
-  | 'TUESDAY'
-  /** An enum value to represent Wednesday. */
-  | 'WEDNESDAY'
-  /** An enum value to represent Thursday. */
-  | 'THURSDAY'
-  /** An enum value to represent Friday. */
-  | 'FRIDAY'
-  /** An enum value to represent Saturday. */
-  | 'SATURDAY'
-  /** An enum value to represent Sunday. */
-  | 'SUNDAY';
 
+/** A connection to a list of items. */
+export type EventConnection = {
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** A list of edges. */
+  edges: Maybe<Array<Maybe<EventEdge>>>;
+};
+
+/** An edge in a connection. */
+export type EventEdge = {
+  /** The item at the end of the edge */
+  node: Maybe<Event>;
+  /** A cursor for use in pagination */
+  cursor: Scalars['String'];
+};
+
+/** A time slot inside of a calendar. Might include a summary and a description. */
+export type Event = {
+  start: Scalars['DateTime'];
+  end: Scalars['DateTime'];
+};
 
 /** A connection to a list of items. */
 export type TimeSlotConnection = {
-  __typename: 'TimeSlotConnection';
   /** Information to aid in pagination. */
   pageInfo: PageInfo;
   /** A list of edges. */
-  edges?: Maybe<Array<Maybe<TimeSlotEdge>>>;
+  edges: Maybe<Array<Maybe<TimeSlotEdge>>>;
 };
 
 /** An edge in a connection. */
 export type TimeSlotEdge = {
-  __typename: 'TimeSlotEdge';
   /** The item at the end of the edge */
-  node?: Maybe<TimeSlot>;
+  node: Maybe<TimeSlot>;
   /** A cursor for use in pagination */
   cursor: Scalars['String'];
 };
 
 /** A time slot is a time inside of a time table that can be booked. */
 export type TimeSlot = {
-  __typename: 'TimeSlot';
   /** The starting time for this slot. */
   startTime: Scalars['DateTime'];
   /** Then end time for this slot. */
   endTime: Scalars['DateTime'];
   /** Is this time slot available for booking? */
-  available?: Maybe<Scalars['Boolean']>;
-  /** Returns the amount of assets available. */
-  availableAssetsCount?: Maybe<Scalars['Int']>;
+  available: Maybe<Scalars['Boolean']>;
 };
 
 /** A filter for filtering a list of time slots. */
@@ -584,55 +394,87 @@ export type TimeSlotFilter = {
   after?: Maybe<Scalars['DateTime']>;
   /** Before which point in time should slots be returned? */
   before?: Maybe<Scalars['DateTime']>;
-};
-
-/** A connection to a list of items. */
-export type AvailabilityConnection = {
-  __typename: 'AvailabilityConnection';
-  /** Information to aid in pagination. */
-  pageInfo: PageInfo;
-  /** A list of edges. */
-  edges?: Maybe<Array<Maybe<AvailabilityEdge>>>;
-};
-
-/** An edge in a connection. */
-export type AvailabilityEdge = {
-  __typename: 'AvailabilityEdge';
-  /** The item at the end of the edge */
-  node?: Maybe<Availability>;
-  /** A cursor for use in pagination */
-  cursor: Scalars['String'];
+  /** If true shows only available slots, if false shows only booked slots. */
+  available?: Maybe<Scalars['Boolean']>;
 };
 
 /** A connection to a list of items. */
 export type ReservationConnection = {
-  __typename: 'ReservationConnection';
   /** Information to aid in pagination. */
   pageInfo: PageInfo;
   /** A list of edges. */
-  edges?: Maybe<Array<Maybe<ReservationEdge>>>;
+  edges: Maybe<Array<Maybe<ReservationEdge>>>;
 };
 
 /** An edge in a connection. */
 export type ReservationEdge = {
-  __typename: 'ReservationEdge';
   /** The item at the end of the edge */
-  node?: Maybe<Reservation>;
+  node: Maybe<Reservation>;
   /** A cursor for use in pagination */
   cursor: Scalars['String'];
 };
 
-/** A reservation for an asset. */
+/**
+ * A reservation is a set of bookings that are not yet confirmed. In that sense, a reservation is
+ * the equivalent of a shopping cart in a traditional ecommerce system. The difference is that a
+ * reservation "reserves" the resource for a certain amount of time. This way, users have time to
+ * proceed to checkout. If the reservation is not completed, it becomes stale after a while, and
+ * the blocked resources are released again.
+ */
 export type Reservation = {
-  __typename: 'Reservation';
+  /** A unique identifier for this reservation. */
+  id: Scalars['ID'];
+  /**
+   * If the reservation is not completed yet, it might expire after some time.
+   * This expiration time can be received from this field.
+   */
+  expiresAt: Maybe<Scalars['DateTime']>;
+  /** The time when this reservation was completed. */
+  completedAt: Maybe<Scalars['DateTime']>;
+  /**
+   * A reservation can have multiple bookings, that it reserves until it either times out or is
+   * completed.
+   */
+  bookings: BookingConnection;
+};
+
+
+/**
+ * A reservation is a set of bookings that are not yet confirmed. In that sense, a reservation is
+ * the equivalent of a shopping cart in a traditional ecommerce system. The difference is that a
+ * reservation "reserves" the resource for a certain amount of time. This way, users have time to
+ * proceed to checkout. If the reservation is not completed, it becomes stale after a while, and
+ * the blocked resources are released again.
+ */
+export type ReservationBookingsArgs = {
+  after?: Maybe<Scalars['String']>;
+  first?: Maybe<Scalars['Int']>;
+  before?: Maybe<Scalars['String']>;
+  last?: Maybe<Scalars['Int']>;
+};
+
+/** A connection to a list of items. */
+export type BookingConnection = {
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** A list of edges. */
+  edges: Maybe<Array<Maybe<BookingEdge>>>;
+};
+
+/** An edge in a connection. */
+export type BookingEdge = {
+  /** The item at the end of the edge */
+  node: Maybe<Booking>;
+  /** A cursor for use in pagination */
+  cursor: Scalars['String'];
+};
+
+/** A reservation for a resource or resource group. */
+export type Booking = {
   /** A unique identifier for this reservation. */
   id: Scalars['ID'];
   /** This reservation was made for a model and . */
-  asset?: Maybe<Asset>;
-  /** The reservation was made for a specific model. */
-  model?: Maybe<Model>;
-  /** The time when this reservation was completed. */
-  completedAt?: Maybe<Scalars['DateTime']>;
+  resource: Maybe<Resource>;
   /** The point in time where this reservation starts */
   startTime: Scalars['DateTime'];
   /** The point in time where this reservation ends */
@@ -640,43 +482,55 @@ export type Reservation = {
 };
 
 /** A connection to a list of items. */
-export type ApiKeyConnection = {
-  __typename: 'ApiKeyConnection';
+export type CalendarConnection = {
   /** Information to aid in pagination. */
   pageInfo: PageInfo;
   /** A list of edges. */
-  edges?: Maybe<Array<Maybe<ApiKeyEdge>>>;
+  edges: Maybe<Array<Maybe<CalendarEdge>>>;
+};
+
+/** An edge in a connection. */
+export type CalendarEdge = {
+  /** The item at the end of the edge */
+  node: Maybe<Calendar>;
+  /** A cursor for use in pagination */
+  cursor: Scalars['String'];
+};
+
+/** A connection to a list of items. */
+export type ApiKeyConnection = {
+  /** Information to aid in pagination. */
+  pageInfo: PageInfo;
+  /** A list of edges. */
+  edges: Maybe<Array<Maybe<ApiKeyEdge>>>;
 };
 
 /** An edge in a connection. */
 export type ApiKeyEdge = {
-  __typename: 'ApiKeyEdge';
   /** The item at the end of the edge */
-  node?: Maybe<ApiKey>;
+  node: Maybe<ApiKey>;
   /** A cursor for use in pagination */
   cursor: Scalars['String'];
 };
 
 /** An API key used to connect to the API */
 export type ApiKey = {
-  __typename: 'ApiKey';
   /** A unique identifier for this API key. */
   id: Scalars['ID'];
   /** A short description for this API key to remember where it is used. */
-  description?: Maybe<Scalars['String']>;
+  description: Maybe<Scalars['String']>;
   /** Information about this key's permission level. */
-  level?: Maybe<ApiKeyPermissionLevelInfo>;
+  level: Maybe<ApiKeyPermissionLevelInfo>;
   /** This is the actual key you will use to authenticated your application. This string is only return when creating a new API key. Afterwards, this field always returns null for a key. */
-  key?: Maybe<Scalars['String']>;
+  key: Maybe<Scalars['String']>;
 };
 
 /** Detailed information about an API key permission level. */
 export type ApiKeyPermissionLevelInfo = {
-  __typename: 'ApiKeyPermissionLevelInfo';
   /** The enum value that represents this permission level. */
   enum: ApiKeyPermissionLevel;
   /** A text that describes the access level of a particular permission level. */
-  description?: Maybe<Scalars['String']>;
+  description: Maybe<Scalars['String']>;
   /** Checks weather the current permission level allows creating a key with this permission level. */
   canCreate: Scalars['Boolean'];
 };
@@ -687,32 +541,29 @@ export type ApiKeyPermissionLevel =
   | 'READ'
   /** This permission level allows making bookings. */
   | 'WRITE'
-  /** With this permission you can take full control over the whole organization structure, change bookings, and automate asset management. */
+  /** With this permission you can take full control over the whole organization structure, change bookings, and automate resource management. */
   | 'ADMIN'
   /** This powerful token allows you to take full control over your account. If you need this type of token, please contact our support to discuss you use case. */
   | 'SUPERADMIN';
 
 /** A connection to a list of items. */
 export type CustomerConnection = {
-  __typename: 'CustomerConnection';
   /** Information to aid in pagination. */
   pageInfo: PageInfo;
   /** A list of edges. */
-  edges?: Maybe<Array<Maybe<CustomerEdge>>>;
+  edges: Maybe<Array<Maybe<CustomerEdge>>>;
 };
 
 /** An edge in a connection. */
 export type CustomerEdge = {
-  __typename: 'CustomerEdge';
   /** The item at the end of the edge */
-  node?: Maybe<Customer>;
+  node: Maybe<Customer>;
   /** A cursor for use in pagination */
   cursor: Scalars['String'];
 };
 
 /** Data related to a customer of your business. */
 export type Customer = {
-  __typename: 'Customer';
   /** A unique identifier for this customer. */
   id: Scalars['ID'];
   /** The email of the customer. */
@@ -723,45 +574,32 @@ export type Customer = {
 
 /** Each user has an account associated with them. */
 export type Account = {
-  __typename: 'Account';
   /** A unique identifier for this account. */
   id: Scalars['ID'];
   /** The email address associated with this account. */
   email: Scalars['ID'];
   /** The name of the owner of this account. Might be null, if no name is set (yet). */
-  name?: Maybe<Scalars['String']>;
+  name: Maybe<Scalars['String']>;
 };
 
 /** The root mutation type */
 export type Mutation = {
-  __typename: 'Mutation';
   /** Create a new organisation for the currently viewing user. */
   createOrganisation: CreateOrganisationResult;
   /** Update an organisation. */
   updateOrganisation: UpdateOrganisationResult;
   /** (Soft) delete an organisation. */
   deleteOrganisation: DeleteMutationResult;
-  /** Create a new category. */
-  createCategory: CreateCategoryResult;
-  updateCategory: UpdateCategoryResult;
-  /** (Soft) delete a category. */
-  deleteCategory: DeleteMutationResult;
-  /** Create a new model. */
-  createModel: CreateModelResult;
-  /** Update an existing model. */
-  updateModel: UpdateModelResult;
-  /** (Soft) delete a model. */
-  deleteModel: DeleteMutationResult;
-  /** Create a new asset of a specific model. */
-  createAsset: CreateAssetResult;
   updateAccount: UpdateAccountResult;
-  /** Create a new schedule by supplying a set of rules. */
-  createAvailability: CreateAvailabilityResult;
-  /** Update some properties of a schedule. Most properties of a schedule are immutable and should not be changed. This prevents bookings in the past to become invalid. If you want to change the other properties of a schedule, create a new schedule instead. */
-  updateSchedule: UpdateScheduleResult;
   createReservation: CreateReservationResult;
   /** Update a reservation. */
   updateReservation: UpdateReservationResult;
+  /**
+   * Cancel a reservation an release all attached bookings. The slots will be available again for
+   * other bookings. Reservations expire automatically, meaning they don't need to be deleted
+   * manually, but sometimes it is beneficial to release a reservation.
+   */
+  deleteReservation: DeleteMutationResult;
   createApiKey: CreateApiKeyResult;
   /**
    * Revoke an API key making it invalid for further usage.
@@ -769,6 +607,13 @@ export type Mutation = {
    * The key will stay in the database to keep track of changes that were made with this key.
    */
   deleteApiKey: DeleteMutationResult;
+  createCustomer: CreateCustomerResult;
+  /** Create a new calendar with a given name. */
+  createCalendar: CreateCalendarResult;
+  updateCalendar: UpdateCalendarResult;
+  /** Create a new resource. */
+  createResource: CreateResourceResult;
+  updateResource: UpdateResourceResult;
 };
 
 
@@ -792,66 +637,9 @@ export type MutationDeleteOrganisationArgs = {
 
 
 /** The root mutation type */
-export type MutationCreateCategoryArgs = {
-  draft: CategoryDraft;
-};
-
-
-/** The root mutation type */
-export type MutationUpdateCategoryArgs = {
-  id: Scalars['ID'];
-  actions: Array<CategoryAction>;
-};
-
-
-/** The root mutation type */
-export type MutationDeleteCategoryArgs = {
-  id: Scalars['ID'];
-};
-
-
-/** The root mutation type */
-export type MutationCreateModelArgs = {
-  draft: ModelDraft;
-};
-
-
-/** The root mutation type */
-export type MutationUpdateModelArgs = {
-  id: Scalars['ID'];
-  actions: Array<ModelAction>;
-};
-
-
-/** The root mutation type */
-export type MutationDeleteModelArgs = {
-  id: Scalars['ID'];
-};
-
-
-/** The root mutation type */
-export type MutationCreateAssetArgs = {
-  draft: AssetDraft;
-};
-
-
-/** The root mutation type */
 export type MutationUpdateAccountArgs = {
   id: Scalars['ID'];
   actions: Array<AccountAction>;
-};
-
-
-/** The root mutation type */
-export type MutationCreateAvailabilityArgs = {
-  draft: AvailabilityDraft;
-};
-
-
-/** The root mutation type */
-export type MutationUpdateScheduleArgs = {
-  id: Scalars['ID'];
-  actions: Array<ScheduleAction>;
 };
 
 
@@ -869,6 +657,12 @@ export type MutationUpdateReservationArgs = {
 
 
 /** The root mutation type */
+export type MutationDeleteReservationArgs = {
+  id: Scalars['ID'];
+};
+
+
+/** The root mutation type */
 export type MutationCreateApiKeyArgs = {
   draft: ApiKeyDraft;
 };
@@ -879,15 +673,46 @@ export type MutationDeleteApiKeyArgs = {
   id: Scalars['ID'];
 };
 
+
+/** The root mutation type */
+export type MutationCreateCustomerArgs = {
+  draft: CustomerDraft;
+};
+
+
+/** The root mutation type */
+export type MutationCreateCalendarArgs = {
+  draft: CalendarDraft;
+};
+
+
+/** The root mutation type */
+export type MutationUpdateCalendarArgs = {
+  id: Scalars['ID'];
+  actions: Array<CalendarAction>;
+};
+
+
+/** The root mutation type */
+export type MutationCreateResourceArgs = {
+  draft: ResourceDraft;
+};
+
+
+/** The root mutation type */
+export type MutationUpdateResourceArgs = {
+  id: Scalars['ID'];
+  actions: Array<ResourceAction>;
+};
+
 /** Mutation result of the _createOrganisation_ mutation. */
 export type CreateOrganisationResult = {
-  __typename: 'CreateOrganisationResult';
   /** This field indicates wheather the mutation was successful or not. */
   success: Scalars['Boolean'];
   /** This field contains all the user side errors that occurred during the execution of the mutation. */
   errors: Array<UserError>;
   /** On successful creation contains the newly created entity. */
-  organisation?: Maybe<Organisation>;
+  organisation: Maybe<Organisation>;
 };
 
 /** Draft entity that contains all fields for the creation. */
@@ -898,13 +723,12 @@ export type OrganisationDraft = {
 
 /** Mutation result of the _updateOrganisation_ mutation. */
 export type UpdateOrganisationResult = {
-  __typename: 'UpdateOrganisationResult';
   /** This field indicates wheather the mutation was successful or not. */
   success: Scalars['Boolean'];
   /** This field contains all the user side errors that occurred during the execution of the mutation. */
   errors: Array<UserError>;
   /** The updated version of the organisation if all the actions were successful. */
-  organisation?: Maybe<Organisation>;
+  organisation: Maybe<Organisation>;
 };
 
 /** Input type that holds all available actions on the _Organisation_ type. */
@@ -921,157 +745,20 @@ export type OrganisationSetDenomination = {
 
 /** Generic result created by any delete mutation. */
 export type DeleteMutationResult = {
-  __typename: 'DeleteMutationResult';
   /** This field indicates wheather the mutation was successful or not. */
   success: Scalars['Boolean'];
   /** This field contains all the user side errors that occurred during the execution of the mutation. */
   errors: Array<UserError>;
-};
-
-/** Mutation result of the _createCategory_ mutation. */
-export type CreateCategoryResult = {
-  __typename: 'CreateCategoryResult';
-  /** This field indicates wheather the mutation was successful or not. */
-  success: Scalars['Boolean'];
-  /** This field contains all the user side errors that occurred during the execution of the mutation. */
-  errors: Array<UserError>;
-  /** On successful creation contains the newly created entity. */
-  category?: Maybe<Category>;
-};
-
-/** Draft entity that contains all fields for the creation. */
-export type CategoryDraft = {
-  /** The id of the organisation that this category should be created for. */
-  organisationId: Scalars['ID'];
-  /** The name for the new category. */
-  denomination: Scalars['String'];
-};
-
-/** Mutation result of the _updateCategory_ mutation. */
-export type UpdateCategoryResult = {
-  __typename: 'UpdateCategoryResult';
-  /** This field indicates wheather the mutation was successful or not. */
-  success: Scalars['Boolean'];
-  /** This field contains all the user side errors that occurred during the execution of the mutation. */
-  errors: Array<UserError>;
-  /** Returns the category if it can be found by the provided ID. */
-  category?: Maybe<Category>;
-};
-
-/** Input type that holds all available actions on the _Category_ type. */
-export type CategoryAction = {
-  /** Set the denomination of this category to a new value. */
-  setDenomination?: Maybe<CategorySetDenomination>;
-};
-
-/** Arguments needed for the _SetDenomination_ action. */
-export type CategorySetDenomination = {
-  /** The new name for this denomination. */
-  denomination: Scalars['String'];
-};
-
-/** Mutation result of the _createModel_ mutation. */
-export type CreateModelResult = {
-  __typename: 'CreateModelResult';
-  /** This field indicates wheather the mutation was successful or not. */
-  success: Scalars['Boolean'];
-  /** This field contains all the user side errors that occurred during the execution of the mutation. */
-  errors: Array<UserError>;
-  /** On successful creation contains the newly created entity. */
-  model?: Maybe<Model>;
-};
-
-/** Draft entity that contains all fields for the creation. */
-export type ModelDraft = {
-  /** The id of the organisation that this category should be created for. */
-  categoryId: Scalars['ID'];
-  /** The name for the new category. */
-  denomination: Scalars['String'];
-};
-
-/** Mutation result of the _updateModel_ mutation. */
-export type UpdateModelResult = {
-  __typename: 'UpdateModelResult';
-  /** This field indicates wheather the mutation was successful or not. */
-  success: Scalars['Boolean'];
-  /** This field contains all the user side errors that occurred during the execution of the mutation. */
-  errors: Array<UserError>;
-  /** If the update was successful, the updated model is returned from this field. */
-  model?: Maybe<Model>;
-};
-
-/** Input type that holds all available actions on the _Model_ type. */
-export type ModelAction = {
-  /** Set the description to this new value. */
-  setDenomination?: Maybe<ModelSetDenomination>;
-  /**
-   * Set a new schedule for this model starting at `validFrom`.
-   * If no value is provided for `validFrom` uses the current point in time.
-   */
-  addSchedule?: Maybe<ModelAddSchedule>;
-  /**
-   * Removes a schedule from the model. This is only possible, if the schedule is in the
-   * future. Schedules in the past cannot be removed, instead their validity should simply be
-   * adjusted.
-   *
-   * _Removing future schedules will not remove already booked slots. These slots will stay
-   * valid._
-   */
-  removeSchedule?: Maybe<ModelRemoveSchedule>;
-};
-
-/** Arguments needed for the _SetDenomination_ action. */
-export type ModelSetDenomination = {
-  /** The new denomination value */
-  denomination: Scalars['String'];
-};
-
-/** Arguments needed for the _AddSchedule_ action. */
-export type ModelAddSchedule = {
-  /** Defines the start of the validity span of this schedule. If no value is provided, uses the current date. */
-  validFrom?: Maybe<Scalars['DateTime']>;
-  /** Defines the end of the validity span of this schedule. If no value is provided, the validity span becomes open ended. This is useful if there is currently no intent of using a different schedule anytime soon. */
-  validUntil?: Maybe<Scalars['DateTime']>;
-  /** The ID of the availability that should be used for this schedule. */
-  availabilityId: Scalars['ID'];
-  /** This is the booking mode for this schedule. */
-  bookingMode: BookingMode;
-};
-
-/** Arguments needed for the _RemoveSchedule_ action. */
-export type ModelRemoveSchedule = {
-  /** The ID of the schedule that should be removed. */
-  id: Scalars['ID'];
-};
-
-/** Mutation result of the _createAsset_ mutation. */
-export type CreateAssetResult = {
-  __typename: 'CreateAssetResult';
-  /** This field indicates wheather the mutation was successful or not. */
-  success: Scalars['Boolean'];
-  /** This field contains all the user side errors that occurred during the execution of the mutation. */
-  errors: Array<UserError>;
-  /** On successful creation contains the newly created entity. */
-  asset?: Maybe<Asset>;
-};
-
-/** Draft entity that contains all fields for the creation. */
-export type AssetDraft = {
-  /** This is the name of the asset that will be displayed in the UI and potentially to your end-users. */
-  denomination: Scalars['String'];
-  /** The ID of the model for this asset. */
-  modelId: Scalars['ID'];
 };
 
 /** Mutation result of the _updateAccount_ mutation. */
 export type UpdateAccountResult = {
-  __typename: 'UpdateAccountResult';
   /** This field indicates wheather the mutation was successful or not. */
   success: Scalars['Boolean'];
   /** This field contains all the user side errors that occurred during the execution of the mutation. */
   errors: Array<UserError>;
   /** If the mutation was successfull, the updated account is returned here. */
-  account?: Maybe<Account>;
+  account: Maybe<Account>;
 };
 
 /** Input type that holds all available actions on the _Account_ type. */
@@ -1094,85 +781,26 @@ export type AccountSetEmail = {
   name: Scalars['String'];
 };
 
-/** Mutation result of the _createAvailability_ mutation. */
-export type CreateAvailabilityResult = {
-  __typename: 'CreateAvailabilityResult';
-  /** This field indicates wheather the mutation was successful or not. */
-  success: Scalars['Boolean'];
-  /** This field contains all the user side errors that occurred during the execution of the mutation. */
-  errors: Array<UserError>;
-  /** On successful creation contains the newly created entity. */
-  availability?: Maybe<Availability>;
-};
-
-/** Draft entity that contains all fields for the creation. */
-export type AvailabilityDraft = {
-  /** Specify an organisation that this availability should be associated with. If you don't specify an organisation, we will automatically derive it from your API key. */
-  organisationId?: Maybe<Scalars['ID']>;
-  /** The denomination can be used to better identify a schedule in the UI. */
-  denomination?: Maybe<Scalars['String']>;
-  /** List of rules describing a complex schedule. */
-  rules: Array<AvailabilityRuleDraft>;
-};
-
-/** All the data needed to create a a new schedule draft. */
-export type AvailabilityRuleDraft = {
-  /** List of weekdays that have the time slots of this rule. */
-  weekdays: Array<Weekday>;
-  /** When do the slots of this rule start? */
-  startTime: Scalars['LocalTime'];
-  /** When do the slots of this rule end? */
-  endTime: Scalars['LocalTime'];
-  /** Should the slots not be available on holidays? */
-  excludeHolidays: Scalars['Boolean'];
-};
-
-/** Mutation result of the _updateSchedule_ mutation. */
-export type UpdateScheduleResult = {
-  __typename: 'UpdateScheduleResult';
-  /** This field indicates wheather the mutation was successful or not. */
-  success: Scalars['Boolean'];
-  /** This field contains all the user side errors that occurred during the execution of the mutation. */
-  errors: Array<UserError>;
-  /** If this mutation was successful, returns the updated schedule here. */
-  schedule?: Maybe<Schedule>;
-};
-
-/** Input type that holds all available actions on the _Schedule_ type. */
-export type ScheduleAction = {
-  /**
-   * Set the end date of a schedule.
-   * After this date the schedule is no longer valid and a different schedule can be set for
-   * a model.
-   *
-   * *Warning*: Bookings that have already been made in the future under this schedule stay
-   * valid and might be "hanging", meaning not within a valid schedule. You will have to
-   * resolve these bookings yourself.
-   */
-  setValidUntil?: Maybe<ScheduleSetValidUntil>;
-};
-
-/** Arguments needed for the _SetValidUntil_ action. */
-export type ScheduleSetValidUntil = {
-  /** The date at which this schedule should stop being valid. */
-  validUntil: Scalars['DateTime'];
-};
-
 /** Mutation result of the _createReservation_ mutation. */
 export type CreateReservationResult = {
-  __typename: 'CreateReservationResult';
   /** This field indicates wheather the mutation was successful or not. */
   success: Scalars['Boolean'];
   /** This field contains all the user side errors that occurred during the execution of the mutation. */
   errors: Array<UserError>;
   /** On successful creation contains the newly created entity. */
-  reservation?: Maybe<Reservation>;
+  reservation: Maybe<Reservation>;
 };
 
 /** Draft entity that contains all fields for the creation. */
 export type ReservationDraft = {
-  /** The id of the model that this reservation should reserve. */
-  modelId: Scalars['ID'];
+  /** List of bookings to be requested for this reservation. */
+  bookings: Array<BookingDraft>;
+};
+
+/** This request for a booking is used when creating a reservation to indicate time and bookable, that should be reserved. */
+export type BookingDraft = {
+  /** The id of the bookable that this reservation should reserve. */
+  bookableId: Scalars['ID'];
   /** Start of the reservation. */
   start: Scalars['DateTime'];
   /** End of the reservation. */
@@ -1181,47 +809,29 @@ export type ReservationDraft = {
 
 /** Mutation result of the _updateReservation_ mutation. */
 export type UpdateReservationResult = {
-  __typename: 'UpdateReservationResult';
   /** This field indicates wheather the mutation was successful or not. */
   success: Scalars['Boolean'];
   /** This field contains all the user side errors that occurred during the execution of the mutation. */
   errors: Array<UserError>;
   /** The updated reservation if the update was successful. */
-  reservation?: Maybe<Reservation>;
+  reservation: Maybe<Reservation>;
 };
 
 /** Input type that holds all available actions on the _Reservation_ type. */
 export type ReservationAction = {
-  /** Link an existing customer to this reservation. Please note, that the authentication of the user needs to be taken over by the client application. Currently, if the ID of a customer is known, anyone with an */
-  linkExistingCustomer?: Maybe<ReservationLinkExistingCustomer>;
-  /** Cancel a reservation that has not yet been checked out. */
-  abort?: Maybe<Scalars['EmptyPayload']>;
   /** Complete (checkout) a reservation making it permanent. Depending on the settings, some customer data has to be provided or a payment has to succeed. */
-  complete?: Maybe<ReservationComplete>;
+  complete?: Maybe<Scalars['EmptyPayload']>;
 };
 
-/** Arguments needed for the _LinkExistingCustomer_ action. */
-export type ReservationLinkExistingCustomer = {
-  /** The ID of an existing customer in the database. */
-  customerId: Scalars['ID'];
-};
-
-
-/** Arguments needed for the _Complete_ action. */
-export type ReservationComplete = {
-  /** If we have the customer already in our database, we can provide the customers' ID directly. */
-  customerId?: Maybe<Scalars['ID']>;
-};
 
 /** Mutation result of the _createApiKey_ mutation. */
 export type CreateApiKeyResult = {
-  __typename: 'CreateApiKeyResult';
   /** This field indicates wheather the mutation was successful or not. */
   success: Scalars['Boolean'];
   /** This field contains all the user side errors that occurred during the execution of the mutation. */
   errors: Array<UserError>;
   /** On successful creation contains the newly created entity. */
-  apiKey?: Maybe<ApiKey>;
+  apiKey: Maybe<ApiKey>;
 };
 
 /** Draft entity that contains all fields for the creation. */
@@ -1234,153 +844,221 @@ export type ApiKeyDraft = {
   description: Scalars['String'];
 };
 
-export type CategoryFragment = { __typename: 'Category', id: string, denomination: string };
+/** Mutation result of the _createCustomer_ mutation. */
+export type CreateCustomerResult = {
+  /** This field indicates wheather the mutation was successful or not. */
+  success: Scalars['Boolean'];
+  /** This field contains all the user side errors that occurred during the execution of the mutation. */
+  errors: Array<UserError>;
+  /** On successful creation contains the newly created entity. */
+  customer: Maybe<Customer>;
+};
 
-export type ModelFragment = { __typename: 'Model', id: string, denomination: string, category?: Maybe<(
-    { __typename: 'Category' }
-    & CategoryFragment
-  )> };
+/** Draft entity that contains all fields for the creation. */
+export type CustomerDraft = {
+  /** The name of the customer. */
+  name: Scalars['String'];
+  /** The email of this customer, used for uniquely identifying the customer. */
+  email: Scalars['String'];
+  /** If you are not using an organisation specific key, an organisation ID has to be specified. */
+  organisationId?: Maybe<Scalars['ID']>;
+};
 
-export type AssetFragment = { __typename: 'Asset', id: string, denomination: string, model: { __typename: 'Model', id: string, denomination: string } };
+/** Mutation result of the _createCalendar_ mutation. */
+export type CreateCalendarResult = {
+  /** This field indicates wheather the mutation was successful or not. */
+  success: Scalars['Boolean'];
+  /** This field contains all the user side errors that occurred during the execution of the mutation. */
+  errors: Array<UserError>;
+  /** On successful creation contains the newly created entity. */
+  calendar: Maybe<Calendar>;
+};
 
-export type TimeSlotFragment = { __typename: 'TimeSlot', startTime: string, endTime: string, available?: Maybe<boolean> };
+/** Draft entity that contains all fields for the creation. */
+export type CalendarDraft = {
+  /** The ID of the organisation will be determined automatically, */
+  organisationId?: Maybe<Scalars['ID']>;
+  /** The name of this calendar. */
+  denomination?: Maybe<Scalars['String']>;
+};
 
-export type ReservationFragment = { __typename: 'Reservation', id: string, startTime: string, endTime: string, completedAt?: Maybe<string>, model?: Maybe<{ __typename: 'Model', id: string, denomination: string }> };
+/** Mutation result of the _updateCalendar_ mutation. */
+export type UpdateCalendarResult = {
+  /** This field indicates wheather the mutation was successful or not. */
+  success: Scalars['Boolean'];
+  /** This field contains all the user side errors that occurred during the execution of the mutation. */
+  errors: Array<UserError>;
+  /** Returns the updated calendar, if the mutation was successful. */
+  calendar: Maybe<Calendar>;
+};
 
-export type PageInfoFieldsFragment = { __typename: 'PageInfo', hasNextPage: boolean, endCursor?: Maybe<string> };
+/** Input type that holds all available actions on the _Calendar_ type. */
+export type CalendarAction = {
+  /** Set the denomination of the calendar to a new value. */
+  setDenomination?: Maybe<CalendarSetDenomination>;
+  /** Add a single event (rule) to the calendar. */
+  addSingleEvent?: Maybe<CalendarAddSingleEvent>;
+};
+
+/** Arguments needed for the _SetDenomination_ action. */
+export type CalendarSetDenomination = {
+  /** The new denomination or `null` if the denomination should be deleted. */
+  denomination?: Maybe<Scalars['String']>;
+};
+
+/** Arguments needed for the _AddSingleEvent_ action. */
+export type CalendarAddSingleEvent = {
+  /** Start time of the event. */
+  start: Scalars['DateTime'];
+  /** Duration of the event in milliseconds. */
+  duration: Scalars['Int'];
+  /** A title for this event. */
+  summary?: Maybe<Scalars['String']>;
+  /** A description for this event. */
+  description?: Maybe<Scalars['String']>;
+};
+
+/** Mutation result of the _createResource_ mutation. */
+export type CreateResourceResult = {
+  /** This field indicates wheather the mutation was successful or not. */
+  success: Scalars['Boolean'];
+  /** This field contains all the user side errors that occurred during the execution of the mutation. */
+  errors: Array<UserError>;
+  /** On successful creation contains the newly created entity. */
+  resource: Maybe<Resource>;
+};
+
+/** Draft entity that contains all fields for the creation. */
+export type ResourceDraft = {
+  /** This is the name of the resource that will be displayed in the UI and potentially to your end-users. */
+  denomination?: Maybe<Scalars['String']>;
+  /** The organisation's ID that this resource should be attached to (not needed if you use a normal API key). */
+  organisationId?: Maybe<Scalars['ID']>;
+};
+
+/** Mutation result of the _updateResource_ mutation. */
+export type UpdateResourceResult = {
+  /** This field indicates wheather the mutation was successful or not. */
+  success: Scalars['Boolean'];
+  /** This field contains all the user side errors that occurred during the execution of the mutation. */
+  errors: Array<UserError>;
+  /** if successful, contains the updated resource. */
+  resource: Maybe<Resource>;
+};
+
+/** Input type that holds all available actions on the _Resource_ type. */
+export type ResourceAction = {
+  /** Associate this resource with a calendar to indicate when this resource can be booked. */
+  setCalendar?: Maybe<ResourceSetCalendar>;
+  /** Set the denomination of the resource to a new value. */
+  setDenomination?: Maybe<ResourceSetDenomination>;
+};
+
+/** Arguments needed for the _SetCalendar_ action. */
+export type ResourceSetCalendar = {
+  /** The ID of the calendar that should be used for this resource. */
+  calendarId: Scalars['ID'];
+};
+
+/** Arguments needed for the _SetDenomination_ action. */
+export type ResourceSetDenomination = {
+  /** The new denomination or `null` if the denomination should be deleted. */
+  denomination?: Maybe<Scalars['String']>;
+};
+
+export type ResourceFragment = { __typename: 'Resource', id: string, denomination: Maybe<string>, calendar: Maybe<{ __typename: 'Calendar', id: string, denomination: Maybe<string> }> };
+
+export type CalendarFragment = { __typename: 'Calendar', id: string, denomination: Maybe<string> };
+
+export type BookingFragment = { __typename: 'Booking', id: string, startTime: string, endTime: string, resource: Maybe<{ __typename: 'Resource', id: string, denomination: Maybe<string> }> };
+
+export type TimeSlotFragment = { __typename: 'TimeSlot', startTime: string, endTime: string, available: Maybe<boolean> };
+
+export type ReservationFragment = { __typename: 'Reservation', id: string, expiresAt: Maybe<string>, completedAt: Maybe<string>, bookings: { __typename: 'BookingConnection', edges: Maybe<Array<Maybe<{ __typename: 'BookingEdge', node: Maybe<(
+        { __typename: 'Booking' }
+        & BookingFragment
+      )> }>>> } };
+
+export type PageInfoFieldsFragment = { __typename: 'PageInfo', hasNextPage: boolean, endCursor: Maybe<string> };
 
 type UserError_IllegalActionError_Fragment = { __typename: 'IllegalActionError', message: string };
 
-type UserError_ValidationError_Fragment = { __typename: 'ValidationError', field: string, hint?: Maybe<string>, message: string };
+type UserError_ValidationError_Fragment = { __typename: 'ValidationError', field: string, hint: Maybe<string>, message: string };
 
 type UserError_DataInconsistencyError_Fragment = { __typename: 'DataInconsistencyError', message: string };
 
 export type UserErrorFragment = UserError_IllegalActionError_Fragment | UserError_ValidationError_Fragment | UserError_DataInconsistencyError_Fragment;
 
-export type AllCategoriesQueryVariables = Exact<{
+export type AllResourcesQueryVariables = Exact<{
   first?: Maybe<Scalars['Int']>;
   after?: Maybe<Scalars['String']>;
 }>;
 
 
-export type AllCategoriesQuery = { __typename: 'Query', organisation?: Maybe<{ __typename: 'Organisation', categories: { __typename: 'CategoryConnection', pageInfo: (
+export type AllResourcesQuery = { __typename: 'Query', organisation: Maybe<{ __typename: 'Organisation', resources: { __typename: 'ResourceConnection', pageInfo: (
         { __typename: 'PageInfo' }
         & PageInfoFieldsFragment
-      ), edges?: Maybe<Array<Maybe<{ __typename: 'CategoryEdge', node?: Maybe<(
-          { __typename: 'Category' }
-          & CategoryFragment
+      ), edges: Maybe<Array<Maybe<{ __typename: 'ResourceEdge', node: Maybe<(
+          { __typename: 'Resource' }
+          & ResourceFragment
         )> }>>> } }> };
 
-export type SingleCategoryQueryVariables = Exact<{
+export type SingleResourceQueryVariables = Exact<{
   id: Scalars['ID'];
 }>;
 
 
-export type SingleCategoryQuery = { __typename: 'Query', category?: Maybe<(
-    { __typename: 'Category' }
-    & CategoryFragment
+export type SingleResourceQuery = { __typename: 'Query', resource: Maybe<(
+    { __typename: 'Resource' }
+    & ResourceFragment
   )> };
 
-export type AllModelsQueryVariables = Exact<{
+export type AllCalendarsQueryVariables = Exact<{
   first?: Maybe<Scalars['Int']>;
   after?: Maybe<Scalars['String']>;
 }>;
 
 
-export type AllModelsQuery = { __typename: 'Query', organisation?: Maybe<{ __typename: 'Organisation', models: { __typename: 'ModelConnection', pageInfo: (
+export type AllCalendarsQuery = { __typename: 'Query', organisation: Maybe<{ __typename: 'Organisation', calendars: { __typename: 'CalendarConnection', pageInfo: (
         { __typename: 'PageInfo' }
         & PageInfoFieldsFragment
-      ), edges?: Maybe<Array<Maybe<{ __typename: 'ModelEdge', node?: Maybe<(
-          { __typename: 'Model' }
-          & ModelFragment
+      ), edges: Maybe<Array<Maybe<{ __typename: 'CalendarEdge', node: Maybe<(
+          { __typename: 'Calendar' }
+          & CalendarFragment
         )> }>>> } }> };
 
-export type ModelsByCategoryQueryVariables = Exact<{
-  categoryId: Scalars['ID'];
-  first?: Maybe<Scalars['Int']>;
-  after?: Maybe<Scalars['String']>;
-}>;
-
-
-export type ModelsByCategoryQuery = { __typename: 'Query', category?: Maybe<{ __typename: 'Category', models: { __typename: 'ModelConnection', pageInfo: (
-        { __typename: 'PageInfo' }
-        & PageInfoFieldsFragment
-      ), edges?: Maybe<Array<Maybe<{ __typename: 'ModelEdge', node?: Maybe<(
-          { __typename: 'Model' }
-          & ModelFragment
-        )> }>>> } }> };
-
-export type SingleModelQueryVariables = Exact<{
+export type SingleCalendarQueryVariables = Exact<{
   id: Scalars['ID'];
 }>;
 
 
-export type SingleModelQuery = { __typename: 'Query', model?: Maybe<(
-    { __typename: 'Model' }
-    & ModelFragment
+export type SingleCalendarQuery = { __typename: 'Query', calendar: Maybe<(
+    { __typename: 'Calendar' }
+    & CalendarFragment
   )> };
 
-export type AllAssetsQueryVariables = Exact<{
-  first?: Maybe<Scalars['Int']>;
-  after?: Maybe<Scalars['String']>;
-}>;
-
-
-export type AllAssetsQuery = { __typename: 'Query', organisation?: Maybe<{ __typename: 'Organisation', assets: { __typename: 'AssetConnection', pageInfo: (
-        { __typename: 'PageInfo' }
-        & PageInfoFieldsFragment
-      ), edges?: Maybe<Array<Maybe<{ __typename: 'AssetEdge', node?: Maybe<(
-          { __typename: 'Asset' }
-          & AssetFragment
-        )> }>>> } }> };
-
-export type SingleAssetQueryVariables = Exact<{
-  id: Scalars['ID'];
-}>;
-
-
-export type SingleAssetQuery = { __typename: 'Query', asset?: Maybe<(
-    { __typename: 'Asset' }
-    & AssetFragment
-  )> };
-
-export type AssetsByModelQueryVariables = Exact<{
-  modelId: Scalars['ID'];
-  first?: Maybe<Scalars['Int']>;
-  after?: Maybe<Scalars['String']>;
-}>;
-
-
-export type AssetsByModelQuery = { __typename: 'Query', model?: Maybe<{ __typename: 'Model', assets: { __typename: 'AssetConnection', pageInfo: (
-        { __typename: 'PageInfo' }
-        & PageInfoFieldsFragment
-      ), edges?: Maybe<Array<Maybe<{ __typename: 'AssetEdge', node?: Maybe<(
-          { __typename: 'Asset' }
-          & AssetFragment
-        )> }>>> } }> };
-
-export type TimeSlotsByModelQueryVariables = Exact<{
-  modelId: Scalars['ID'];
+export type TimeSlotsByResourceQueryVariables = Exact<{
+  resourceId: Scalars['ID'];
   filter?: Maybe<TimeSlotFilter>;
   first?: Maybe<Scalars['Int']>;
   after?: Maybe<Scalars['String']>;
 }>;
 
 
-export type TimeSlotsByModelQuery = { __typename: 'Query', model?: Maybe<{ __typename: 'Model', slots: { __typename: 'TimeSlotConnection', pageInfo: (
+export type TimeSlotsByResourceQuery = { __typename: 'Query', resource: Maybe<{ __typename: 'Resource', slots: Maybe<{ __typename: 'TimeSlotConnection', pageInfo: (
         { __typename: 'PageInfo' }
         & PageInfoFieldsFragment
-      ), edges?: Maybe<Array<Maybe<{ __typename: 'TimeSlotEdge', node?: Maybe<(
+      ), edges: Maybe<Array<Maybe<{ __typename: 'TimeSlotEdge', node: Maybe<(
           { __typename: 'TimeSlot' }
           & TimeSlotFragment
-        )> }>>> } }> };
+        )> }>>> }> }> };
 
 export type SingleReservationQueryVariables = Exact<{
   id: Scalars['ID'];
 }>;
 
 
-export type SingleReservationQuery = { __typename: 'Query', reservation?: Maybe<(
+export type SingleReservationQuery = { __typename: 'Query', reservation: Maybe<(
     { __typename: 'Reservation' }
     & ReservationFragment
   )> };
@@ -1399,7 +1077,7 @@ export type CreateReservationMutation = { __typename: 'Mutation', createReservat
     ) | (
       { __typename: 'DataInconsistencyError' }
       & UserError_DataInconsistencyError_Fragment
-    )>, reservation?: Maybe<(
+    )>, reservation: Maybe<(
       { __typename: 'Reservation' }
       & ReservationFragment
     )> } };
@@ -1419,38 +1097,44 @@ export type UpdateReservationMutation = { __typename: 'Mutation', updateReservat
     ) | (
       { __typename: 'DataInconsistencyError' }
       & UserError_DataInconsistencyError_Fragment
-    )>, reservation?: Maybe<(
+    )>, reservation: Maybe<(
       { __typename: 'Reservation' }
       & ReservationFragment
     )> } };
 
-export const CategoryFragmentDoc = gql`
-    fragment Category on Category {
+export type DeleteReservationMutationVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type DeleteReservationMutation = { __typename: 'Mutation', deleteReservation: { __typename: 'DeleteMutationResult', success: boolean, errors: Array<(
+      { __typename: 'IllegalActionError' }
+      & UserError_IllegalActionError_Fragment
+    ) | (
+      { __typename: 'ValidationError' }
+      & UserError_ValidationError_Fragment
+    ) | (
+      { __typename: 'DataInconsistencyError' }
+      & UserError_DataInconsistencyError_Fragment
+    )> } };
+
+export const ResourceFragmentDoc = gql`
+    fragment Resource on Resource {
   __typename
   id
   denomination
-}
-    `;
-export const ModelFragmentDoc = gql`
-    fragment Model on Model {
-  __typename
-  id
-  denomination
-  category {
-    ...Category
-  }
-}
-    ${CategoryFragmentDoc}`;
-export const AssetFragmentDoc = gql`
-    fragment Asset on Asset {
-  __typename
-  id
-  denomination
-  model {
+  calendar {
     __typename
     id
     denomination
   }
+}
+    `;
+export const CalendarFragmentDoc = gql`
+    fragment Calendar on Calendar {
+  __typename
+  id
+  denomination
 }
     `;
 export const TimeSlotFragmentDoc = gql`
@@ -1461,20 +1145,34 @@ export const TimeSlotFragmentDoc = gql`
   available
 }
     `;
-export const ReservationFragmentDoc = gql`
-    fragment Reservation on Reservation {
+export const BookingFragmentDoc = gql`
+    fragment Booking on Booking {
   __typename
   id
-  startTime
-  endTime
-  model {
+  resource {
     __typename
     id
     denomination
   }
-  completedAt
+  startTime
+  endTime
 }
     `;
+export const ReservationFragmentDoc = gql`
+    fragment Reservation on Reservation {
+  __typename
+  id
+  expiresAt
+  completedAt
+  bookings(first: 100) {
+    edges {
+      node {
+        ...Booking
+      }
+    }
+  }
+}
+    ${BookingFragmentDoc}`;
 export const PageInfoFieldsFragmentDoc = gql`
     fragment PageInfoFields on PageInfo {
   __typename
@@ -1492,115 +1190,57 @@ export const UserErrorFragmentDoc = gql`
   }
 }
     `;
-export const AllCategoriesDocument = gql`
-    query AllCategories($first: Int, $after: String) {
+export const AllResourcesDocument = gql`
+    query AllResources($first: Int, $after: String) {
   organisation {
-    categories(first: $first, after: $after) {
+    resources(first: $first, after: $after) {
       pageInfo {
         ...PageInfoFields
       }
       edges {
         node {
-          ...Category
+          ...Resource
         }
       }
     }
   }
 }
     ${PageInfoFieldsFragmentDoc}
-${CategoryFragmentDoc}`;
-export const SingleCategoryDocument = gql`
-    query SingleCategory($id: ID!) {
-  category(id: $id) {
-    ...Category
+${ResourceFragmentDoc}`;
+export const SingleResourceDocument = gql`
+    query SingleResource($id: ID!) {
+  resource(id: $id) {
+    ...Resource
   }
 }
-    ${CategoryFragmentDoc}`;
-export const AllModelsDocument = gql`
-    query AllModels($first: Int, $after: String) {
+    ${ResourceFragmentDoc}`;
+export const AllCalendarsDocument = gql`
+    query AllCalendars($first: Int, $after: String) {
   organisation {
-    models(first: $first, after: $after) {
+    calendars(first: $first, after: $after) {
       pageInfo {
         ...PageInfoFields
       }
       edges {
         node {
-          ...Model
+          ...Calendar
         }
       }
     }
   }
 }
     ${PageInfoFieldsFragmentDoc}
-${ModelFragmentDoc}`;
-export const ModelsByCategoryDocument = gql`
-    query ModelsByCategory($categoryId: ID!, $first: Int, $after: String) {
-  category(id: $categoryId) {
-    models(first: $first, after: $after) {
-      pageInfo {
-        ...PageInfoFields
-      }
-      edges {
-        node {
-          ...Model
-        }
-      }
-    }
+${CalendarFragmentDoc}`;
+export const SingleCalendarDocument = gql`
+    query SingleCalendar($id: ID!) {
+  calendar(id: $id) {
+    ...Calendar
   }
 }
-    ${PageInfoFieldsFragmentDoc}
-${ModelFragmentDoc}`;
-export const SingleModelDocument = gql`
-    query SingleModel($id: ID!) {
-  model(id: $id) {
-    ...Model
-  }
-}
-    ${ModelFragmentDoc}`;
-export const AllAssetsDocument = gql`
-    query AllAssets($first: Int, $after: String) {
-  organisation {
-    assets(first: $first, after: $after) {
-      pageInfo {
-        ...PageInfoFields
-      }
-      edges {
-        node {
-          ...Asset
-        }
-      }
-    }
-  }
-}
-    ${PageInfoFieldsFragmentDoc}
-${AssetFragmentDoc}`;
-export const SingleAssetDocument = gql`
-    query SingleAsset($id: ID!) {
-  asset(id: $id) {
-    ...Asset
-  }
-}
-    ${AssetFragmentDoc}`;
-export const AssetsByModelDocument = gql`
-    query AssetsByModel($modelId: ID!, $first: Int, $after: String) {
-  model(id: $modelId) {
-    assets(first: $first, after: $after) {
-      pageInfo {
-        ...PageInfoFields
-      }
-      edges {
-        node {
-          ...Asset
-        }
-      }
-    }
-  }
-}
-    ${PageInfoFieldsFragmentDoc}
-${AssetFragmentDoc}`;
-export const TimeSlotsByModelDocument = gql`
-    query TimeSlotsByModel($modelId: ID!, $filter: TimeSlotFilter, $first: Int, $after: String) {
-  model(id: $modelId) {
+    ${CalendarFragmentDoc}`;
+export const TimeSlotsByResourceDocument = gql`
+    query TimeSlotsByResource($resourceId: ID!, $filter: TimeSlotFilter, $first: Int, $after: String) {
+  resource(id: $resourceId) {
     slots(filter: $filter, first: $first, after: $after) {
       pageInfo {
         ...PageInfoFields
@@ -1650,6 +1290,16 @@ export const UpdateReservationDocument = gql`
 }
     ${UserErrorFragmentDoc}
 ${ReservationFragmentDoc}`;
+export const DeleteReservationDocument = gql`
+    mutation DeleteReservation($id: ID!) {
+  deleteReservation(id: $id) {
+    success
+    errors {
+      ...UserError
+    }
+  }
+}
+    ${UserErrorFragmentDoc}`;
 
 export type SdkFunctionWrapper = <T>(action: () => Promise<T>) => Promise<T>;
 
@@ -1657,32 +1307,20 @@ export type SdkFunctionWrapper = <T>(action: () => Promise<T>) => Promise<T>;
 const defaultWrapper: SdkFunctionWrapper = sdkFunction => sdkFunction();
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
-    AllCategories(variables?: AllCategoriesQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<AllCategoriesQuery> {
-      return withWrapper(() => client.request<AllCategoriesQuery>(print(AllCategoriesDocument), variables, requestHeaders));
+    AllResources(variables?: AllResourcesQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<AllResourcesQuery> {
+      return withWrapper(() => client.request<AllResourcesQuery>(print(AllResourcesDocument), variables, requestHeaders));
     },
-    SingleCategory(variables: SingleCategoryQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<SingleCategoryQuery> {
-      return withWrapper(() => client.request<SingleCategoryQuery>(print(SingleCategoryDocument), variables, requestHeaders));
+    SingleResource(variables: SingleResourceQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<SingleResourceQuery> {
+      return withWrapper(() => client.request<SingleResourceQuery>(print(SingleResourceDocument), variables, requestHeaders));
     },
-    AllModels(variables?: AllModelsQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<AllModelsQuery> {
-      return withWrapper(() => client.request<AllModelsQuery>(print(AllModelsDocument), variables, requestHeaders));
+    AllCalendars(variables?: AllCalendarsQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<AllCalendarsQuery> {
+      return withWrapper(() => client.request<AllCalendarsQuery>(print(AllCalendarsDocument), variables, requestHeaders));
     },
-    ModelsByCategory(variables: ModelsByCategoryQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<ModelsByCategoryQuery> {
-      return withWrapper(() => client.request<ModelsByCategoryQuery>(print(ModelsByCategoryDocument), variables, requestHeaders));
+    SingleCalendar(variables: SingleCalendarQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<SingleCalendarQuery> {
+      return withWrapper(() => client.request<SingleCalendarQuery>(print(SingleCalendarDocument), variables, requestHeaders));
     },
-    SingleModel(variables: SingleModelQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<SingleModelQuery> {
-      return withWrapper(() => client.request<SingleModelQuery>(print(SingleModelDocument), variables, requestHeaders));
-    },
-    AllAssets(variables?: AllAssetsQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<AllAssetsQuery> {
-      return withWrapper(() => client.request<AllAssetsQuery>(print(AllAssetsDocument), variables, requestHeaders));
-    },
-    SingleAsset(variables: SingleAssetQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<SingleAssetQuery> {
-      return withWrapper(() => client.request<SingleAssetQuery>(print(SingleAssetDocument), variables, requestHeaders));
-    },
-    AssetsByModel(variables: AssetsByModelQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<AssetsByModelQuery> {
-      return withWrapper(() => client.request<AssetsByModelQuery>(print(AssetsByModelDocument), variables, requestHeaders));
-    },
-    TimeSlotsByModel(variables: TimeSlotsByModelQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<TimeSlotsByModelQuery> {
-      return withWrapper(() => client.request<TimeSlotsByModelQuery>(print(TimeSlotsByModelDocument), variables, requestHeaders));
+    TimeSlotsByResource(variables: TimeSlotsByResourceQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<TimeSlotsByResourceQuery> {
+      return withWrapper(() => client.request<TimeSlotsByResourceQuery>(print(TimeSlotsByResourceDocument), variables, requestHeaders));
     },
     SingleReservation(variables: SingleReservationQueryVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<SingleReservationQuery> {
       return withWrapper(() => client.request<SingleReservationQuery>(print(SingleReservationDocument), variables, requestHeaders));
@@ -1692,6 +1330,9 @@ export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = 
     },
     UpdateReservation(variables: UpdateReservationMutationVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<UpdateReservationMutation> {
       return withWrapper(() => client.request<UpdateReservationMutation>(print(UpdateReservationDocument), variables, requestHeaders));
+    },
+    DeleteReservation(variables: DeleteReservationMutationVariables, requestHeaders?: Dom.RequestInit["headers"]): Promise<DeleteReservationMutation> {
+      return withWrapper(() => client.request<DeleteReservationMutation>(print(DeleteReservationDocument), variables, requestHeaders));
     }
   };
 }
