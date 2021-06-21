@@ -36,24 +36,31 @@ const leasy = new Client({ apiKey: '<YOUR_API_KEY_HERE>' });
 import { Client } from 'leasy';
 
 const leasy = new Client({ apiKey: '<YOUR_API_KEY_HERE>' });
+const resourceId = '<SOME_RESOURCE_ID>';
 
-const test = async () => {
-  const modelId = '<SOME_MODEL_ID>';
-
-  const slots = await leasy.timeSlots.byModel({
-    modelId,
-    filter: { after: new Date().toISOString() },
+const example = async () => {
+  // Load all upcoming available slots
+  const slots = await leasy.timeSlots.byResource({
+    resourceId,
+    filter: { available: true },
   });
-
-  const nextAvailableSlot = slots.nodes.find(slot => slot && slot.available);
+  const nextAvailableSlot = slots.nodes[0];
 
   if (nextAvailableSlot) {
+    // Attempt to create a reservation, this line might throw if unsuccessful
+    // After this, the reservation is ours, we have to complete it within the next 15 minutes
     const reservation = await leasy.reservations.create({
-      modelId,
-      start: nextAvailableSlot.startTime,
-      end: nextAvailableSlot.endTime,
+      bookings: [
+        {
+          bookableId: resourceId,
+          start: nextAvailableSlot.startTime,
+          end: nextAvailableSlot.endTime,
+        },
+      ],
     });
 
+    // in this example we complete the reservation immediately, in the real world, you might want to
+    // guide the customer through some kind of checkout process and e.g. receive some payments
     await leasy.reservations.update(reservation.id, reservation => [reservation.complete()]);
   }
 };

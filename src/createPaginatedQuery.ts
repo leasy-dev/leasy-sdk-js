@@ -15,14 +15,20 @@ export type PreviousControl<TNode> =
 
 type PageInfo = {
   readonly hasNextPage?: boolean;
-  readonly endCursor?: string;
+  readonly endCursor?: string | null;
 };
 
 type ConnectionType<TNode> = {
   readonly pageInfo: PageInfo;
-  readonly edges?: readonly {
-    readonly node?: TNode;
-  }[];
+  readonly edges?:
+    | readonly (
+        | {
+            readonly node?: TNode | null;
+          }
+        | null
+        | undefined
+      )[]
+    | null;
 };
 
 export type PaginatedQueryOptions = { pageSize?: number };
@@ -38,9 +44,9 @@ export type VariablelessPaginatedQuery<TNode> = (
   options?: PaginatedQueryOptions,
 ) => Promise<Page<TNode>>;
 
-export function createVariablelessPaginatedQuery<TNode>(
-  queryFn: (variables: PaginationVars) => Promise<any>,
-  accessFn: (result: any) => ConnectionType<TNode> | undefined,
+export function createVariablelessPaginatedQuery<TQueryResult, TNode>(
+  queryFn: (variables: PaginationVars) => Promise<TQueryResult>,
+  accessFn: (result: TQueryResult) => ConnectionType<TNode> | undefined | null,
 ): VariablelessPaginatedQuery<TNode> {
   const paginatedQuery = createPaginatedQuery(queryFn, accessFn);
   return (options?: PaginatedQueryOptions) => {
@@ -48,9 +54,9 @@ export function createVariablelessPaginatedQuery<TNode>(
   };
 }
 
-export function createPaginatedQuery<TNode, TVariables>(
-  queryFn: (variables: TVariables & PaginationVars) => Promise<any>,
-  accessFn: (result: any) => ConnectionType<TNode> | undefined,
+export function createPaginatedQuery<TQueryResult, TNode, TVariables>(
+  queryFn: (variables: TVariables & PaginationVars) => Promise<TQueryResult>,
+  accessFn: (result: TQueryResult) => ConnectionType<TNode> | undefined | null,
 ): PaginatedQuery<TNode, TVariables> {
   return (variables: TVariables, options: PaginatedQueryOptions = {}) => {
     const pages: Array<Promise<Page<TNode>>> = [];
@@ -78,7 +84,7 @@ export function createPaginatedQuery<TNode, TVariables>(
                 },
                 hasPrevious: index !== 0,
                 previous: () => pages[index - 1] ?? null,
-                nodes: connection.edges?.map(edge => edge.node ?? null) ?? [],
+                nodes: connection.edges?.map(edge => edge?.node ?? null) ?? [],
               };
             },
           );

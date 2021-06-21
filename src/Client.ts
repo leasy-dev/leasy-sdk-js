@@ -3,9 +3,9 @@ import { createPaginatedQuery, createVariablelessPaginatedQuery } from './create
 import { ResourcesScope } from './entities/resource';
 import { CalendarsScope } from './entities/calendar';
 import { Reservation, reservationActionCreator, ReservationsScope } from './entities/reservation';
-import { TimeSlot, TimeSlotsScope } from './entities/timeSlot';
+import { TimeSlotsScope } from './entities/timeSlot';
 import { mapErrorsFromGraphQL, NotFoundError } from './errors';
-import { getSdk, Sdk, TimeSlotFilter } from './generated/graphql-operations';
+import { getSdk, Sdk } from './generated/graphql-operations';
 
 const DEFAULT_ENDPOINT = 'https://api.beta.leasy.dev/graphql';
 const SDK_VERSION = '0.0.3';
@@ -50,7 +50,7 @@ export default class Client {
         }),
       all: createVariablelessPaginatedQuery(
         this.sdk.AllCalendars,
-        result => result.organisation?.models,
+        result => result.organisation?.calendars,
       ),
     };
     this.resources = {
@@ -63,14 +63,14 @@ export default class Client {
         }),
       all: createVariablelessPaginatedQuery(
         this.sdk.AllResources,
-        result => result.organisation?.models,
+        result => result.organisation?.resources,
       ),
     };
     this.timeSlots = {
-      byResource: createPaginatedQuery<
-        TimeSlot,
-        { resourceId: string; filter?: TimeSlotFilter | null }
-      >(this.sdk.TimeSlotsByResource, result => result.resource?.slots),
+      byResource: createPaginatedQuery(
+        this.sdk.TimeSlotsByResource,
+        result => result.resource?.slots,
+      ),
     };
     this.reservations = {
       get: (id: string): Promise<Reservation> =>
